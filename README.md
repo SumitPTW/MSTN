@@ -18,8 +18,6 @@ cd MSTN
 pip install torch numpy pandas scikit-learn
 Quick Verification for Reviewers
 Run this simple test to verify MSTN works:
-
-bash
 python test_mstn.py
 Expected Output:
 
