@@ -4,10 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SE_Block(nn.Module):
-    """
-    Squeeze-and-Excitation Block for channel attention.
-    Equation: z_se = z_seq ⊙ σ(W₂ · ReLU(W₁ · z_seq))
-    """
     def __init__(self, channels, reduction=8):
         super().__init__()
         reduced_channels = channels // reduction
