@@ -1,2 +1,4 @@
-from .MSTN_Transformer import Model as MSTN_Transformer
-from .MSTN_BiLSTM import Model as MSTN_BiLSTM
+from .MSTN_Transformer import MSTN_Transformer
+from .MSTN_BiLSTM import MSTN_BiLSTM
+
+__all__ = ['MSTN_Transformer', 'MSTN_BiLSTM']
