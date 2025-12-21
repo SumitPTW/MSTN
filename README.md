@@ -47,9 +47,7 @@ mkdir -p ./datasets/forecasting/ETTm2 && wget https://raw.githubusercontent.com/
 UEA Classification Datasets
 Automatically handled by aeon package. No manual download required.
 
-#Cross-Domain Datasets (Link/Reference in paper)
-
-UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA, 
+#
 
 Configuration
 Model: MSTN-Transformer or MSTN-BiLSTM
@@ -62,3 +60,13 @@ Imputation mask ratios: 12.5%, 25%, 37.5%, 50%
 
 Evaluation metrics: MSE, MAE (forecasting/imputation), Accuracy (classification)
 
+bash
+#Acknowledgement
+
+All the experiment datasets are public, and we obtain them from the following links:
+
+Long-term Forecasting and Imputation: https://github.com/thuml/Autoformer.
+
+Classification: https://www.timeseriesclassification.com/.
+
+Cross-Domain Datasets (Link/Reference in paper) : UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA, 
