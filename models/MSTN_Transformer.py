@@ -9,8 +9,6 @@ from layers.mha_recalibration import MHA_Recalibration
 class MSTN_Transformer(nn.Module):
     """
     MSTN with Transformer as the sequence modeling pathway.
-    Implements the architecture described in Section 2.1 of the manuscript.
-    
     The model follows the Early Temporal Aggregation (ETA) principle:
     1. Dual-path encoding (CNN + Transformer)
     2. ETA: Temporal pooling (L -> 1) for O(1) inference complexity
@@ -35,13 +33,13 @@ class MSTN_Transformer(nn.Module):
         
         # --- 2. Early Temporal Aggregation (ETA) ---
         # Core innovation for O(1) complexity
-        self.eta_cnn = ETA_Module(pool_type='gap')    # Global Average Pooling for CNN
-        self.eta_seq = ETA_Module(pool_type='mean')   # Sequence Mean Pooling for Transformer
+        self.eta_cnn = ETA_Module(pool_type='gap')    
+        self.eta_seq = ETA_Module(pool_type='mean')   
         
         # --- 3. Fusion & Refinement ---
         fused_dim = 64 + 128  # cnn_hidden + d_model = 192
         self.sgf = SGF_Module(fused_dim)  # Self-Gated Fusion
-        self.se_block = SE_Block(fused_dim, reduction=8)  # Squeeze-and-Excitation
+        self.se_block = SE_Block(fused_dim, reduction=8) 
         self.mha_recal = MHA_Recalibration(fused_dim, num_heads=4)
         self.dropout = nn.Dropout(configs.dropout)
         
@@ -87,11 +85,11 @@ class MSTN_Transformer(nn.Module):
         z_seq = self.eta_seq(h_seq)  # [B, 128]
         
         # --- 3. Fusion & Refinement ---
-        z_concat = torch.cat([z_cnn, z_seq], dim=1)  # [B, 192]
+        z_concat = torch.cat([z_cnn, z_seq], dim=1) 
         z_fused = self.sgf(z_concat)  # Self-Gated Fusion
-        z_se = self.se_block(z_fused.unsqueeze(1))  # SE Block expects [B, 1, 192]
+        z_se = self.se_block(z_fused.unsqueeze(1)) 
         z_mha = self.mha_recal(z_se)  # Multi-Head Attention recalibration
-        z_final = self.dropout(z_mha.squeeze(1))  # [B, 192]
+        z_final = self.dropout(z_mha.squeeze(1))  
         
         # --- 4. Task-Specific Output ---
         out = self.head(z_final)
