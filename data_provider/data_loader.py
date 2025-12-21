@@ -164,6 +164,7 @@ class Dataset_Imputation(Dataset):
 # ============================================================================
 # 3. Dataset for UEA Classification Tasks
 # ============================================================================
+
 class Dataset_UEA(Dataset):
     """
     Dataset for UEA multivariate time series classification.
@@ -176,85 +177,97 @@ class Dataset_UEA(Dataset):
         self.flag = flag
         self.data_path = data_path
         self.__read_data__()
-
+    
     def __read_ts_file(self, file_path):
-        """Load a UEA .ts file into numpy arrays."""
+        """Helper: Load a UEA .ts file into numpy arrays."""
         data, labels = [], []
         with open(file_path, 'r') as f:
             for line in f:
-                if line.strip():  # Skip empty lines
-                    parts = line.strip().split(':')
-                    if len(parts) >= 2:
-                        # First part is the label
-                        label = int(float(parts[0].strip()))
-                        # Remaining parts are the multivariate time series
-                        series_str = ':'.join(parts[1:])
-                        # Parse the multivariate series
-                        channels = series_str.strip().split('\\t')
-                        channel_data = []
-                        for channel in channels:
-                            if channel.strip():
-                                values = [float(x) for x in channel.strip().split(',') if x.strip()]
-                                if values:
-                                    channel_data.append(values)
-                        # Ensure all channels have same length
-                        if channel_data:
-                            min_len = min(len(c) for c in channel_data)
-                            channel_data = [c[:min_len] for c in channel_data]
-                            data.append(np.array(channel_data).T)  # Shape: [seq_len, n_channels]
-                            labels.append(label)
+                line = line.strip()
+                if not line:
+                    continue
+                
+                # Split by colon, first part is label
+                parts = line.split(':')
+                if len(parts) < 2:
+                    continue
+                
+                label = int(float(parts[0].strip()))
+                labels.append(label)
+                
+                # Parse multivariate time series
+                series_data = []
+                # Remaining parts are channels separated by backslash-t
+                channels_str = ':'.join(parts[1:])
+                channels = channels_str.split('\\t')
+                
+                for channel_str in channels:
+                    if channel_str.strip():
+                        # Parse comma-separated values
+                        values = [float(x.strip()) for x in channel_str.split(',') if x.strip()]
+                        if values:
+                            series_data.append(values)
+                
+                # Ensure all channels have same length (trim to shortest)
+                if series_data:
+                    min_len = min(len(channel) for channel in series_data)
+                    trimmed_data = [channel[:min_len] for channel in series_data]
+                    # Transpose to shape [seq_len, n_channels]
+                    data.append(np.array(trimmed_data).T)
+        
         return data, labels
-
+    
     def __read_data__(self):
-        # Construct file paths
+        # UEA datasets are in .ts format
         train_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TRAIN.ts')
         test_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TEST.ts')
         
-        # Load data based on flag
+        # Load the appropriate file
         if self.flag == 'train':
             file_to_load = train_file
-        else:
+        else:  # 'test' or 'val'
             file_to_load = test_file
         
-        # Load the .ts file
-        if os.path.exists(file_to_load):
-            data_list, labels_list = self.__read_ts_file(file_to_load)
-            
-            # Find maximum sequence length for padding
-            max_len = max([seq.shape[0] for seq in data_list])
-            n_channels = data_list[0].shape[1]
-            
-            # Pad sequences to max_len and stack
-            padded_data = []
-            for seq in data_list:
-                pad_len = max_len - seq.shape[0]
-                if pad_len > 0:
-                    padded_seq = np.pad(seq, ((0, pad_len), (0, 0)), mode='constant')
-                else:
-                    padded_seq = seq
-                padded_data.append(padded_seq)
-            
-            self.data = np.stack(padded_data)  # Shape: [n_samples, max_len, n_channels]
-            self.labels = np.array(labels_list)
-            
-            # Normalize per channel
-            for i in range(self.data.shape[2]):  # For each channel
-                channel_data = self.data[:, :, i]
-                mean, std = channel_data.mean(), channel_data.std()
-                if std > 0:
-                    self.data[:, :, i] = (channel_data - mean) / std
-        else:
+        if not os.path.exists(file_to_load):
             raise FileNotFoundError(f"UEA dataset file not found: {file_to_load}")
-
+        
+        # Load data using helper
+        data_list, labels_list = self.__read_ts_file(file_to_load)
+        
+        if not data_list:
+            raise ValueError(f"No data loaded from {file_to_load}")
+        
+        # Find max sequence length for padding
+        max_len = max(seq.shape[0] for seq in data_list)
+        n_channels = data_list[0].shape[1]
+        
+        # Pad sequences to max_len
+        padded_data = []
+        for seq in data_list:
+            pad_len = max_len - seq.shape[0]
+            if pad_len > 0:
+                padded_seq = np.pad(seq, ((0, pad_len), (0, 0)), mode='constant', constant_values=0)
+            else:
+                padded_seq = seq
+            padded_data.append(padded_seq)
+        
+        self.data = np.stack(padded_data)  # [n_samples, seq_len, n_channels]
+        self.labels = np.array(labels_list)
+        
+        # Normalize per channel (z-score normalization)
+        for channel_idx in range(self.data.shape[2]):
+            channel_data = self.data[:, :, channel_idx]
+            mean, std = channel_data.mean(), channel_data.std()
+            if std > 1e-8:  # Avoid division by zero
+                self.data[:, :, channel_idx] = (channel_data - mean) / std
+    
     def __getitem__(self, index):
-        # For classification: return sequence and label
         sequence = torch.FloatTensor(self.data[index])  # [seq_len, channels]
         label = torch.LongTensor([self.labels[index]])[0]  # scalar
         return sequence, label
-
+    
     def __len__(self):
         return len(self.data)
-
 
 # ============================================================================
 # 4. Dataset for Cross-Domain HAR Classification (NEW)
