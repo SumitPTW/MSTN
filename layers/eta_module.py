@@ -1,13 +1,39 @@
 import torch
 import torch.nn as nn
 
-class ETAModule(nn.Module):
-    def __init__(self, d_model):
-        super(ETAModule, self).__init__()
-        self.pool = nn.AdaptiveAvgPool1d(1)
+class ETA_Module(nn.Module):
+    """
+    Early Temporal Aggregation (ETA) Module.
+    Collapses the temporal dimension L to 1 via pooling.
+    This is the core operation for O(1) inference complexity.
+    """
+    def __init__(self, pool_type='mean'):
+        """
+        Args:
+            pool_type (str): Type of pooling. 'mean' for sequence mean pooling
+                           (used for Transformer/BiLSTM outputs: [B, L, C]).
+                           'gap' for global average pooling
+                           (used for CNN outputs: [B, C, L]).
+        """
+        super().__init__()
+        self.pool_type = pool_type
 
     def forward(self, x):
-
-        x = x.transpose(1, 2)
-        x = self.pool(x).squeeze(-1)
-        return x
+        """
+        Args:
+            x: Input tensor. Shape depends on pool_type:
+               - If pool_type='mean': [Batch, Length, Channels]
+               - If pool_type='gap':  [Batch, Channels, Length]
+        Returns:
+            Pooled tensor of shape [Batch, Channels]
+        """
+        if self.pool_type == 'mean':
+            # Sequence Mean Pooling for Transformer/BiLSTM output
+            # Input: [B, L, C] -> Output: [B, C]
+            return x.mean(dim=1)
+        elif self.pool_type == 'gap':
+            # Global Average Pooling for CNN output
+            # Input: [B, C, L] -> Output: [B, C]
+            return x.mean(dim=2)
+        else:
+            raise ValueError(f"Unsupported pool_type: {self.pool_type}. Use 'mean' or 'gap'.")
