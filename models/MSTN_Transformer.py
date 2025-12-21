@@ -25,7 +25,7 @@ class MSTN_Transformer(nn.Module):
         )
         
         # --- 2. Early Temporal Aggregation (ETA) ---
-         self.eta_cnn = ETA_Module(pool_type='gap')    
+        self.eta_cnn = ETA_Module(pool_type='gap')    
         self.eta_seq = ETA_Module(pool_type='mean')   
         
         # --- 3. Fusion & Refinement ---
