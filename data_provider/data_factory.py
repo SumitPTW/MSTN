@@ -1,17 +1,14 @@
-
 import torch
 from torch.utils.data import DataLoader
-from .data_loader import Dataset_Custom, Dataset_Imputation, Dataset_UEA, Dataset_HAR
+from .data_loader import Dataset_Custom, Dataset_Imputation, Dataset_UEA, Dataset_CrossDomain  
 
 def data_provider(args, flag):
    
-    # Common DataLoader settings
     shuffle_flag = (flag == 'train')
     drop_last = (flag == 'train')
     batch_size = args.batch_size
     
-    # --- ROUTE BASED ON TASK AND DATASET ---
-    if args.task_name == 'forecasting':
+      if args.task_name == 'forecasting':
         # Forecasting datasets (ETT, Electricity, Weather, etc.)
         if args.dataset_name in ['ETTh1', 'ETTh2', 'ETTm1', 'ETTm2', 
                                 'ECL', 'Weather', 'Traffic', 'Exchange', 'ILI']:
@@ -60,11 +57,15 @@ def data_provider(args, flag):
             'PAMAP2', 'UCI-HAR', 'Rodegast', 'Boubezoul',
             'ActBeCalf', 'MetroPT3', 'NASA'
         ]:
-            # Cross-domain datasets 
-            data_set = Dataset_HAR(
-                dataset_name=args.dataset_name,
+            # Cross-domain datasets - NOW USING Dataset_CrossDomain
+            data_set = Dataset_CrossDomain(  
+                root_path=args.root_path,  
+                data_path=args.data_path,  
                 flag=flag,
-                data_path=args.root_path  
+                size=[args.seq_len, args.label_len, args.pred_len],  
+                features='M', 
+                target='label', 
+                scale=True 
             )
         
         else:
