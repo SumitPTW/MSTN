@@ -8,8 +8,7 @@ MSTN implements a Multi-scale Temporal Network with Early Temporal Aggregation (
 # MSTN multi-scale signal processing pipeline
 ![MSTN Signal Proc](https://github.com/user-attachments/assets/82936e1d-4959-47dc-bd9e-5864e7a17ad2)
 
-<img width="750" height="700" alt="image" src="https://github.com/user-attachments/assets/63cef800-2781-49dc-99d6-cd6bc443c832" />
-
+<img width="750" height="700" alt="image" src="https://github.com/user-attachments/assets/82936e1d-4959-47dc-bd9e-5864e7a17ad2" />
 
 # Key Innovations:
 
