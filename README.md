@@ -97,19 +97,19 @@ UEA Classification Datasets: Automatically handled by data loader.
 MSTN implements a Multi-scale Temporal Network with Early Temporal Aggregation (ETA):
 
 ┌─────────────────────────────────────────────────────┐
-│ Input: [Batch, Sequence Length, Channels] │
+│ Input: [Batch, Sequence Length, Channels]           │
 ├─────────────────────────────────────────────────────┤
-│ Dual-path Encoding: │
-│ • CNN Branch: Multi-scale local patterns │
-│ • Sequence Branch: Transformer/BiLSTM (long-range)│
+│ Dual-path Encoding:                                 │
+│  • CNN Branch: Multi-scale local patterns          │
+│  • Sequence Branch: Transformer/BiLSTM (long-range)│
 ├─────────────────────────────────────────────────────┤
-│ Early Temporal Aggregation (ETA): L → 1 │
+│ Early Temporal Aggregation (ETA): L → 1            │
 ├─────────────────────────────────────────────────────┤
-│ Feature Concatenation │
+│ Feature Concatenation                               │
 ├─────────────────────────────────────────────────────┤
-│ Self-Gated Fusion + SE + MHA Refinement │
+│ Self-Gated Fusion + SE + MHA Refinement            │
 ├─────────────────────────────────────────────────────┤
-│ Task-specific Output │
+│ Task-specific Output                               │
 └─────────────────────────────────────────────────────┘
 
 Key Innovations:
