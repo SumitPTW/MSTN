@@ -44,27 +44,13 @@ mkdir -p ./datasets/forecasting/ETTm2 && wget https://raw.githubusercontent.com/
 # Traffic: https://pems.dot.ca.gov
 # Exchange: https://github.com/laiguokun/multivariate-time-series-data
 # ILI: https://gis.cdc.gov/grasp/fluview/fluportaldashboard.html
+
 UEA Classification Datasets
 Automatically handled by aeon package. No manual download required.
 
-Cross-Domain Datasets
-Download from original sources:
+#Cross-Domain Datasets (Link/Reference in paper)
 
-UCI-HAR: https://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
-
-PAMAP2: https://archive.ics.uci.edu/ml/datasets/PAMAP2+Physical+Activity+Monitoring
-
-Rodegast: DOI: 10.18419/darus-3301
-
-Boubezoul: Reference in paper
-
-ActBeCalf: Reference in paper
-
-MetroPT3: https://archive.ics.uci.edu/dataset/751/metropt+3
-
-NASA: https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository/
-
-Place each dataset in: ./datasets/cross_domain/{dataset_name}/data.csv
+UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA, 
 
 Configuration
 Model: MSTN-Transformer or MSTN-BiLSTM
