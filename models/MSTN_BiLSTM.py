@@ -9,7 +9,6 @@ from layers.mha_recalibration import MHA_Recalibration
 class MSTN_BiLSTM(nn.Module):
     """
     MSTN with BiLSTM as the sequence modeling pathway.
-   
     """
     def __init__(self, configs):
         super().__init__()
@@ -17,7 +16,7 @@ class MSTN_BiLSTM(nn.Module):
         self.seq_len = configs.seq_len
         
         # --- 1. Dual Pathways  ---
-        # CNN pathway for local patterns (same as Transformer variant)
+        # CNN pathway for local patterns 
         self.cnn_pathway = MultiScaleCNN(configs.enc_in, cnn_hidden=64)
         # BiLSTM pathway for sequential dependencies
         self.seq_pathway = BiLSTMPathway(
@@ -37,7 +36,7 @@ class MSTN_BiLSTM(nn.Module):
         self.mha_recal = MHA_Recalibration(fused_dim, num_heads=4)
         self.dropout = nn.Dropout(configs.dropout)
         
-        # --- 4. Task-Specific Heads (Critical) ---
+        # --- 4. Task  ---
         if self.task_name == 'classification':
             self.head = nn.Linear(fused_dim, configs.num_class)
         elif self.task_name in ['long_term_forecast', 'short_term_forecast']:
@@ -53,14 +52,13 @@ class MSTN_BiLSTM(nn.Module):
     
     def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, mask=None):
         # --- 1. Dual Pathway Processing ---
-        # CNN path: expects [B, C, L]
-        h_cnn = self.cnn_pathway(x_enc.transpose(1, 2))  
+         h_cnn = self.cnn_pathway(x_enc.transpose(1, 2))  
         # BiLSTM path: expects [B, L, C]
-        h_seq = self.seq_pathway(x_enc)  # [B, L, 128]
+        h_seq = self.seq_pathway(x_enc)  
         
         # --- 2. Early Temporal Aggregation (L -> 1) ---
-        z_cnn = self.eta_cnn(h_cnn)  # [B, 64]
-        z_seq = self.eta_seq(h_seq)  # [B, 128]
+        z_cnn = self.eta_cnn(h_cnn)  
+        z_seq = self.eta_seq(h_seq)  
         
         # --- 3. Fusion & Refinement ---
         z_concat = torch.cat([z_cnn, z_seq], dim=1)  # [B, 192]
