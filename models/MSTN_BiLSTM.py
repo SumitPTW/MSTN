@@ -9,11 +9,7 @@ from layers.mha_recalibration import MHA_Recalibration
 class MSTN_BiLSTM(nn.Module):
     """
     MSTN with BiLSTM as the sequence modeling pathway.
-    The model follows the Early Temporal Aggregation (ETA) principle:
-    1. Dual-path encoding (CNN + BiLSTM)
-    2. ETA: Temporal pooling (L -> 1) for O(1) inference complexity
-    3. Multi-scale fusion and refinement (SGF, SE, MHA)
-    4. Task-specific prediction head
+   
     """
     def __init__(self, configs):
         super().__init__()
