@@ -4,8 +4,7 @@ import torch.nn as nn
 class ETA_Module(nn.Module):
     """
     Early Temporal Aggregation (ETA) Module.
-    Collapses the temporal dimension L to 1 via pooling.
-    This is the core operation for O(1) inference complexity.
+   
     """
     def __init__(self, pool_type='mean'):
         """
