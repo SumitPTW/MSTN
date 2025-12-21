@@ -32,8 +32,8 @@ class Dataset_Custom(Dataset):
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
         num_val = len(df_raw) - num_train - num_test
-        border1s = [0, num_train - self.seq_len, len(df_raw) - num_test - self.seq_len]
-        border2s = [num_train, num_train + num_val, len(df_raw)]
+        border1s = [0, num_train, num_train + num_val]
+border2s = [num_train, num_train + num_val, len(df_raw)]
         
         type_map = {'train': 0, 'val': 1, 'test': 2}
         set_type = type_map[self.flag]
@@ -220,11 +220,12 @@ class Dataset_UEA(Dataset):
         train_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TRAIN.ts')
         test_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TEST.ts')
         
-   
-        if self.flag == 'train':
-            file_to_load = train_file
-        else:  # 'test' or 'val'
-            file_to_load = test_file
+
+if self.flag == 'train':
+    b1, b2 = border1s[set_type], border2s[set_type]
+else:  
+    b1, b2 = border1s[set_type] - self.seq_len, border2s[set_type]
+    
         
         if not os.path.exists(file_to_load):
             raise FileNotFoundError(f"UEA dataset file not found: {file_to_load}")
