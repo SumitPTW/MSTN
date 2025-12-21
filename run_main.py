@@ -32,16 +32,19 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device):
             # Masked MSE loss
             loss = criterion(output * mask, x_original * mask)
 
+     
         elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
-    x, y, x_mark, y_mark = batch_data
-    x, y = x.to(device).float(), y.to(device).float()
-    x_mark = x_mark.to(device).float()
-    y_mark = y_mark.to(device).float()
+            x, y, x_mark, y_mark = batch_data
+            x, y = x.to(device).float(), y.to(device).float()
+            x_mark = x_mark.to(device).float()
+            y_mark = y_mark.to(device).float()
 
-    output = model(x, x_mark, y, y_mark)
-    y = y[:, -args.pred_len:, :].to(device) 
-    
-    loss = criterion(output, y)
+            output = model(x, x_mark, y, y_mark)
+            
+            # SLICING FIX: This is required for Informer/TimesNet style data
+            y = y[:, -args.pred_len:, :].to(device) 
+            
+            loss = criterion(output, y)
         
         loss.backward()
         optimizer.step()
