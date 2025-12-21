@@ -31,13 +31,14 @@ python run_main.py --task classification --dataset UCI-HAR
 Dataset Preparation
 Forecasting Datasets
 bash
+
 # ETT datasets (ETTh1, ETTh2, ETTm1, ETTm2)
 mkdir -p ./datasets/forecasting/ETTh1 && wget https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv -O ./datasets/forecasting/ETTh1/data.csv
 mkdir -p ./datasets/forecasting/ETTh2 && wget https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh2.csv -O ./datasets/forecasting/ETTh2/data.csv
 mkdir -p ./datasets/forecasting/ETTm1 && wget https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTm1.csv -O ./datasets/forecasting/ETTm1/data.csv
 mkdir -p ./datasets/forecasting/ETTm2 && wget https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTm2.csv -O ./datasets/forecasting/ETTm2/data.csv
 
-# Other forecasting datasets: Download from original sources cited in paper
+# Forecasting datasets: Download from original sources cited in paper
 # ECL: https://archive.ics.uci.edu/ml/datasets/ElectricityLoadDiagrams20112014
 # Weather: https://www.bgc-jena.mpg.de/wetter/
 # Traffic: https://pems.dot.ca.gov
