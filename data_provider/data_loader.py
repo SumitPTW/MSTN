@@ -351,4 +351,160 @@ class Dataset_CrossDomain(Dataset):
         return len(self.data)
 
 
-
+    # ========== PROCESSING FUNCTIONS ==========
+    
+    def _process_rodegest(self, df):
+        """Process Rodegast collision data from CSV"""
+        # Extract sensor columns (adjust based on actual CSV structure)
+        sensor_cols = [col for col in df.columns if 'sensor' in col.lower() 
+                      or 'acc' in col.lower() or 'gyro' in col.lower()]
+        
+        sequences = []
+        labels = []
+        window_size = 100
+        stride = 10
+        
+        for i in range(0, len(df) - window_size, stride):
+            seq = df[sensor_cols].iloc[i:i+window_size].values  # [100, n_features]
+            label = df['label'].iloc[i+window_size-1] if 'label' in df.columns else 0
+            sequences.append(seq)
+            labels.append(label)
+        
+        return np.array(sequences), np.array(labels)
+    
+    def _process_uci_har(self, data_file, label_file):
+        """Process UCI-HAR from TXT files"""
+        # Load from official UCI-HAR format
+        data = np.loadtxt(data_file)  # Shape: [n_samples, 128*9=1152]
+        labels = np.loadtxt(label_file, dtype=int)  # Shape: [n_samples]
+        
+        # Reshape to [n_samples, 128, 9]
+        data = data.reshape(-1, 128, 9)
+        
+        # Convert labels from 1-6 to 0-5
+        labels = labels - 1
+        
+        return data, labels
+    
+    def _process_pamap2(self, data_file):
+        """Process PAMAP2 .dat files"""
+        # PAMAP2 raw format: each line has timestamp, activityID, heart_rate, IMU data
+        data = []
+        labels = []
+        
+        with open(data_file, 'r') as f:
+            for line in f:
+                values = line.strip().split()
+                if len(values) < 2:
+                    continue
+                
+                # First value is timestamp, second is activity ID
+                label = int(float(values[1]))
+                
+                # Remaining values are sensor readings (52 features)
+                sensor_values = [float(v) for v in values[2:54]]  # Adjust based on actual format
+                
+                # You need to accumulate into windows (e.g., 100 timesteps)
+                # This is simplified - you need proper windowing logic
+                pass
+        
+        # Return as numpy arrays after windowing
+        return np.array(data), np.array(labels)
+    
+    def _process_boubezoul(self, df):
+        """Process Boubezoul fall detection from Excel"""
+        # Extract features and labels
+        feature_cols = [col for col in df.columns if col not in ['label', 'timestamp', 'subject']]
+        label_col = 'label'
+        
+        sequences = []
+        labels = []
+        window_size = 50
+        stride = 5
+        
+        for i in range(0, len(df) - window_size, stride):
+            seq = df[feature_cols].iloc[i:i+window_size].values
+            label = df[label_col].iloc[i+window_size-1] if label_col in df.columns else 0
+            sequences.append(seq)
+            labels.append(label)
+        
+        return np.array(sequences), np.array(labels)
+    
+    def _process_actbecalf(self, df):
+        """Process ActBeCalf behavior data"""
+        # Similar to Rodegast but with different column names
+        feature_cols = [col for col in df.columns if 'sensor' in col or 'value' in col]
+        label_col = 'behavior'
+        
+        sequences = []
+        labels = []
+        window_size = 200
+        stride = 20
+        
+        for i in range(0, len(df) - window_size, stride):
+            seq = df[feature_cols].iloc[i:i+window_size].values
+            label = df[label_col].iloc[i+window_size-1] if label_col in df.columns else 0
+            sequences.append(seq)
+            labels.append(label)
+        
+        return np.array(sequences), np.array(labels)
+    
+    def _process_metropolitan(self, csv_dir):
+        """Process MetroPT-3 CSV files"""
+        all_data = []
+        all_labels = []
+        
+        # MetroPT-3 has multiple CSV files for different sensors
+        for csv_file in sorted(os.listdir(csv_dir)):
+            if csv_file.endswith('.csv'):
+                df = pd.read_csv(os.path.join(csv_dir, csv_file))
+                
+                # Extract features (adjust based on actual columns)
+                feature_cols = [col for col in df.columns if 'value' in col or 'reading' in col]
+                
+                # Create sequences
+                window_size = 100
+                stride = 10
+                
+                for i in range(0, len(df) - window_size, stride):
+                    seq = df[feature_cols].iloc[i:i+window_size].values
+                    # MetroPT-3 is for anomaly detection - adjust label logic
+                    label = 0  # Normal
+                    if 'anomaly' in df.columns:
+                        label = int(df['anomaly'].iloc[i+window_size-1] > 0)
+                    
+                    all_data.append(seq)
+                    all_labels.append(label)
+        
+        return np.array(all_data), np.array(all_labels)
+    
+    def _process_nasa(self, csv_file):
+        """Process NASA Turbofan degradation data"""
+        # NASA format: each row is a time cycle, columns are sensor readings
+        df = pd.read_csv(csv_file, sep=' ', header=None)
+        
+        # First columns: engine ID, cycle, operational settings
+        # Remaining columns: sensor readings (typically 14-26 sensors)
+        sensor_start_col = 3  # Adjust based on your dataset version
+        
+        sequences = []
+        labels = []
+        window_size = 50
+        stride = 5
+        
+        # Group by engine ID
+        engine_ids = df.iloc[:, 0].unique()
+        
+        for engine_id in engine_ids:
+            engine_data = df[df.iloc[:, 0] == engine_id]
+            sensor_data = engine_data.iloc[:, sensor_start_col:].values
+            
+            # Create sliding windows
+            for i in range(0, len(sensor_data) - window_size, stride):
+                seq = sensor_data[i:i+window_size, :]
+                # Label: remaining useful life (RUL)
+                rul = len(sensor_data) - (i + window_size)
+                sequences.append(seq)
+                labels.append(rul)
+        
+        return np.array(sequences), np.array(labels)
