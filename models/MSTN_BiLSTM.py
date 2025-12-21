@@ -35,7 +35,7 @@ class MSTN_BiLSTM(nn.Module):
         if self.task_name == 'classification':
             self.head = nn.Linear(fused_dim, configs.num_class)
             
-        elif self.task_name in ['forecasting', 'cross_dataset_generalization']:
+        elif self.task_name in ['long_term_forecast', 'cross_dataset_generalization']:
             self.pred_len = configs.pred_len
             self.c_out = configs.c_out
             self.head = nn.Linear(fused_dim, self.pred_len * self.c_out)
@@ -72,7 +72,7 @@ class MSTN_BiLSTM(nn.Module):
         # 4. Task-Specific Output
         out = self.head(z_final)
         
-        if self.task_name in ['forecasting', 'cross_dataset_generalization']:
+        if self.task_name in ['long_term_forecast', 'cross_dataset_generalization']:
             return out.view(out.shape[0], self.pred_len, self.c_out)
         
         elif self.task_name == 'imputation':
