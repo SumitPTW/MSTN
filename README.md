@@ -1,12 +1,5 @@
 # MSTN: Fast and Efficient Multivariate Time Series Model
-Multi-scale Temporal Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggre-
-gation principle. MSTN integrates three complementary components: (i) a multi-scale convolutional encoder that captures fine-grained local structure; (ii)
-a sequence modeling module that learns long-range dependencies through either recurrent or attention-based mechanisms; and (iii) a self-gated fusion stage
-incorporating squeeze–excitation and multi-head attention to dynamically modulate cross-scale representations. This design enables MSTN to flexibly model
-temporal patterns spanning milliseconds to extended horizons, while avoiding the computational burden typically associated with long-context models.
-Across extensive benchmarks covering forecasting, imputation, classification, and cross-dataset generalization, MSTN achieves state-of-the-art performance, estab-
-lishing new best results on 24 of 32 datasets, while remaining lightweight (≈1M params) and suitable for low-latency (<1 sec, often in milliseconds),
-resource-constrained deployment.
+Multi-scale Temporal Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggregation principle. MSTN integrates three complementary components: (i) a multi-scale convolutional encoder that captures fine-grained local structure; (ii) a sequence modeling module that learns long-range dependencies through either recurrent or attention-based mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and multi-head attention to dynamically modulate cross-scale representations. This design enables MSTN to flexibly model temporal patterns spanning milliseconds to extended horizons, while avoiding the computational burden typically associated with long-context models. Across extensive benchmarks covering forecasting, imputation, classification, and cross-dataset generalization, MSTN achieves state-of-the-art performance, establishing new best results on 24 of 32 datasets, while remaining lightweight (≈1M params) and suitable for low-latency (<1 sec, often in milliseconds), resource-constrained deployment.
 
 # Model Architecture
 MSTN implements a Multi-scale Temporal Network with Early Temporal Aggregation (ETA):
