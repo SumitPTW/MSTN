@@ -7,20 +7,13 @@ from layers.se_block import SE_Block
 from layers.mha_recalibration import MHA_Recalibration
 
 class MSTN_Transformer(nn.Module):
-    """
-    MSTN with Transformer as the sequence modeling pathway.
-    The model follows the Early Temporal Aggregation (ETA) principle:
-    1. Dual-path encoding (CNN + Transformer)
-    2. ETA: Temporal pooling (L -> 1) for O(1) inference complexity
-    3. Multi-scale fusion and refinement (SGF, SE, MHA)
-    4. Task-specific prediction head
-    """
+
     def __init__(self, configs):
         super().__init__()
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         
-        # --- 1. Dual Pathways (Paper Section 2.1) ---
+        # --- 1. Dual Pathways ---
         # CNN pathway for local patterns
         self.cnn_pathway = MultiScaleCNN(configs.enc_in, cnn_hidden=64)
         # Transformer pathway for global dependencies
@@ -32,8 +25,7 @@ class MSTN_Transformer(nn.Module):
         )
         
         # --- 2. Early Temporal Aggregation (ETA) ---
-        # Core innovation for O(1) complexity
-        self.eta_cnn = ETA_Module(pool_type='gap')    
+         self.eta_cnn = ETA_Module(pool_type='gap')    
         self.eta_seq = ETA_Module(pool_type='mean')   
         
         # --- 3. Fusion & Refinement ---
@@ -43,10 +35,10 @@ class MSTN_Transformer(nn.Module):
         self.mha_recal = MHA_Recalibration(fused_dim, num_heads=4)
         self.dropout = nn.Dropout(configs.dropout)
         
-        # --- 4. Task-Specific Heads (Critical) ---
+        # --- 4. Task-Specific Heads ---
         if self.task_name == 'classification':
             self.head = nn.Linear(fused_dim, configs.num_class)
-        elif self.task_name in ['long_term_forecast', 'short_term_forecast']:
+        elif self.task_name in ['long_term_forecast', 'cross_dataset_generalization']:
             self.head = nn.Linear(fused_dim, configs.pred_len * configs.c_out)
             self.pred_len = configs.pred_len
             self.c_out = configs.c_out
@@ -58,22 +50,7 @@ class MSTN_Transformer(nn.Module):
             raise ValueError(f"Unsupported task: {self.task_name}")
     
     def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, mask=None):
-        """
-        Forward pass for MSTN-Transformer.
-        
-        Args:
-            x_enc: Input tensor of shape [Batch, Sequence_Length, Channels]
-            x_mark_enc: Optional temporal features (not used in base MSTN)
-            x_dec: Decoder input (for forecasting tasks)
-            x_mark_dec: Optional decoder temporal features
-            mask: Optional mask for imputation tasks
-        
-        Returns:
-            Task-specific output:
-            - Classification: [Batch, num_class]
-            - Forecasting: [Batch, pred_len, c_out]
-            - Imputation: [Batch, seq_len, c_out]
-        """
+       
         # --- 1. Dual Pathway Processing ---
         # CNN path: expects [B, C, L]
         h_cnn = self.cnn_pathway(x_enc.transpose(1, 2))  # [B, 64, L]
@@ -95,7 +72,7 @@ class MSTN_Transformer(nn.Module):
         out = self.head(z_final)
         
         # Reshape for sequence output tasks
-        if self.task_name in ['long_term_forecast', 'short_term_forecast']:
+        if self.task_name in ['long_term_forecast', 'cross_dataset_generalization']:
             # Reshape to [B, H, C]
             return out.view(out.shape[0], self.pred_len, self.c_out)
         elif self.task_name == 'imputation':
