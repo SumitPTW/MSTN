@@ -1,20 +1,19 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-class SGFModule(nn.Module):
+class SGF_Module(nn.Module):
     """
-    Selective Gated Fusion (SGF) Module
-    Recalibrates features by learning channel-wise dependencies through a bottleneck.
+    Self-Gated Fusion (SGF) Module.
+    Learns to adaptively weight the concatenated features from dual pathways.
+    Equation: z_fused = z_concat ⊙ σ(W_g · z_concat + b_g)
     """
-    def __init__(self, channels, reduction=8):
-        super(SGFModule, self).__init__()
-        # Bottleneck architecture for efficiency
-        self.fc1 = nn.Linear(channels, channels // reduction)
-        self.fc2 = nn.Linear(channels // reduction, channels)
+    def __init__(self, fused_dim):
+        super().__init__()
+        # Linear layer for gating. Paper: W_g ∈ R^{192×192}
+        self.gate = nn.Linear(fused_dim, fused_dim)
 
-    def forward(self, x):
-
-        gate = F.relu(self.fc1(x))
-        selection_mask = torch.sigmoid(self.fc2(gate))
-        return x * selection_mask
+    def forward(self, z_concat):
+        # z_concat shape: [Batch, Fused_Dim] (e.g., [B, 192])
+        gate_weights = torch.sigmoid(self.gate(z_concat))
+        z_fused = z_concat * gate_weights
+        return z_fused
