@@ -269,51 +269,57 @@ class Dataset_UEA(Dataset):
 # ============================================================================
 # 4. Dataset for Cross-Domain 
 # ============================================================================
-class Dataset_HAR(Dataset):
-    """
-    Dataset for cross-domain Human Activity Recognition and sensor datasets.
-    
-    Used for: PAMAP2, UCI-HAR, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA
-    """
-    def __init__(self, dataset_name, flag='train', data_path='./datasets/HAR/'):
+class Dataset_CrossDomain(Dataset):
+    def __init__(self, dataset_name, flag='train', data_path='./datasets/cross_domain/'):
         self.dataset_name = dataset_name
         self.flag = flag
         self.data_path = data_path
         self.__read_data__()
 
     def __read_data__(self):
+        # All 7 datasets with RAW DATA LOADING
+        if self.dataset_name == 'Rodegast':
+            # CSV files from Zenodo
+            csv_file = os.path.join(self.data_path, 'Rodegast', 'collision_data.csv')
+            df = pd.read_csv(csv_file)
+            # Extract sequences and labels from CSV columns
+            all_data, all_labels = self._process_rodegest(df)
         
-        
-        if self.dataset_name == 'PAMAP2':
-            # Load PAMAP2 dataset
-            data_file = os.path.join(self.data_path, 'PAMAP2', 'PAMAP2_data.npy')
-            label_file = os.path.join(self.data_path, 'PAMAP2', 'PAMAP2_labels.npy')
-            
-            if os.path.exists(data_file) and os.path.exists(label_file):
-                all_data = np.load(data_file)
-                all_labels = np.load(label_file)
-            else:
-                # If files don't exist, create dummy data for testing
-                print(f"Warning: {data_file} not found. Creating dummy data.")
-                all_data = np.random.randn(1000, 100, 52)  # [n_samples, seq_len, channels]
-                all_labels = np.random.randint(0, 12, 1000)
+        elif self.dataset_name == 'Boubezoul':
+            # Excel or CSV files
+            data_file = os.path.join(self.data_path, 'Boubezoul', 'fall_data.xlsx')
+            df = pd.read_excel(data_file)
+            all_data, all_labels = self._process_boubezoul(df)
         
         elif self.dataset_name == 'UCI-HAR':
-            # Load UCI-HAR dataset
-            data_file = os.path.join(self.data_path, 'UCI-HAR', 'UCI_HAR_data.npy')
-            label_file = os.path.join(self.data_path, 'UCI-HAR', 'UCI_HAR_labels.npy')
-            
-            if os.path.exists(data_file) and os.path.exists(label_file):
-                all_data = np.load(data_file)
-                all_labels = np.load(label_file)
-            else:
-                print(f"Warning: {data_file} not found. Creating dummy data.")
-                all_data = np.random.randn(800, 128, 9)
-                all_labels = np.random.randint(0, 6, 800)
+            # UCI-HAR has separate train/test TXT files
+            train_file = os.path.join(self.data_path, 'UCI-HAR', 'train', 'X_train.txt')
+            train_labels = os.path.join(self.data_path, 'UCI-HAR', 'train', 'y_train.txt')
+            all_data, all_labels = self._process_uci_har(train_file, train_labels)
         
-    
+        elif self.dataset_name == 'PAMAP2':
+            # PAMAP2 has .dat files
+            data_file = os.path.join(self.data_path, 'PAMAP2', 'subject101.dat')
+            all_data, all_labels = self._process_pamap2(data_file)
+        
+        elif self.dataset_name == 'ActBeCalf':
+            # CSV with sensor data
+            csv_file = os.path.join(self.data_path, 'ActBeCalf', 'calf_behavior.csv')
+            df = pd.read_csv(csv_file)
+            all_data, all_labels = self._process_actbecalf(df)
+        
+        elif self.dataset_name == 'MetroPT3':
+            # Multiple CSV files for different sensors
+            csv_dir = os.path.join(self.data_path, 'MetroPT3', 'csv_files')
+            all_data, all_labels = self._process_metropolitan(csv_dir)
+        
+        elif self.dataset_name == 'NASA':
+            # NASA has multiple CSV files for different engines
+            csv_file = os.path.join(self.data_path, 'NASA', 'train_FD001.txt')
+            all_data, all_labels = self._process_nasa(csv_file)
+        
         else:
-            raise ValueError(f"Dataset {self.dataset_name} not implemented in Dataset_HAR")
+            raise ValueError(f"Dataset {self.dataset_name} not supported.")
       
         n_samples = len(all_data)
         n_train = int(n_samples * 0.7)
@@ -343,3 +349,6 @@ class Dataset_HAR(Dataset):
 
     def __len__(self):
         return len(self.data)
+
+
+
