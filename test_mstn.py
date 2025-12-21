@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
 MSTN Basic Functional Test Script.
-This script performs a quick sanity check for reviewers.
-It verifies the model can import, initialize, and perform a forward pass.
 """
 import sys
 import torch
@@ -107,7 +105,7 @@ def test_mstn_bilstm():
 def main():
     """Run all tests."""
     print("\n" + "="*60)
-    print("MSTN Basic Functional Tests for Reviewers")
+    print("MSTN Basic Functional Tests")
     print("="*60)
     
     # Test both model variants
@@ -120,8 +118,8 @@ def main():
     print("="*60)
     
     if success_transformer and success_bilstm:
-        print("✅ All tests passed! MSTN is ready for review.")
-        print("Reviewers can verify the code compiles and runs forward passes.")
+        print("✅ Tests passed! MSTN")
+        print("forward passes.")
     else:
         print("❌ Some tests failed. Please check the errors above.")
         sys.exit(1)
