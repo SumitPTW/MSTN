@@ -9,8 +9,8 @@ Setup
 - pip install scikit-learn numpy
 
 # Installation - Clone repository
-git clone https://github.com/SumitPTW/MSTN.git
-cd MSTN
+- git clone https://github.com/SumitPTW/MSTN.git
+- cd MSTN
 
 
 # Quick Verification- Run this simple test to verify MSTN works:
