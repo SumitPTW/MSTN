@@ -5,9 +5,7 @@ import torch.nn.functional as F
 class MultiScaleCNN(nn.Module):
     """
     Multi-scale Convolutional Neural Network pathway.
-    Extracts local temporal patterns through hierarchical convolutions.
-    As per paper: Conv1D_7 + BN + ReLU -> Conv1D_5 + ReLU
-    Output shape: [Batch, Channels_Out, Length] for channel-first pooling.
+    
     """
     def __init__(self, c_in, cnn_hidden=64):
         super().__init__()
@@ -33,10 +31,7 @@ class MultiScaleCNN(nn.Module):
 class BiLSTMPathway(nn.Module):
     """
     Bidirectional LSTM pathway for sequence modeling.
-    Captures long-range bidirectional temporal dependencies.
-    As per paper: 2 layers, 64 hidden units per direction -> 128 total.
-    Output shape: [Batch, Length, Features]
-    """
+       """
     def __init__(self, c_in, lstm_hidden=128, num_layers=2):
         super().__init__()
         # BiLSTM: hidden_size is per direction
@@ -62,9 +57,7 @@ class BiLSTMPathway(nn.Module):
 class TransformerPathway(nn.Module):
     """
     Transformer encoder pathway for sequence modeling.
-    Captures long-range dependencies via self-attention.
-    As per paper: 4 layers, 8 attention heads, d_model=128.
-    Output shape: [Batch, Length, d_model]
+   
     """
     def __init__(self, c_in, d_model=128, nhead=8, num_layers=4):
         super().__init__()
