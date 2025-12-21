@@ -1,7 +1,9 @@
-Setup
+# MSTN: Fast and Efficient Multivariate Time Series Model
 
+## Setup
 
-# Install dependencies
+Install dependencies:
+```bash
 pip install torch torchvision torchaudio
 pip install datasetsforecast aeon scikit-learn numpy pandas
 Reproducing Experiments
@@ -16,8 +18,8 @@ bash
 # Example: Heartbeat classification
 python run_main.py --task classification --dataset Heartbeat
 
-# All UEA datasets: EthanolConcentration, FaceDetection, Handwriting, Heartbeat, 
-# JapaneseVowels, PEMS-SF, SelfRegulationSCP1, SelfRegulationSCP2, 
+# All UEA datasets: EthanolConcentration, FaceDetection, Handwriting, Heartbeat,
+# JapaneseVowels, PEMS-SF, SelfRegulationSCP1, SelfRegulationSCP2,
 # SpokenArabicDigits, UWaveGestureLibrary
 Imputation (6 datasets)
 bash
@@ -74,5 +76,3 @@ Prediction horizons: 96, 192, 336, 720 (24, 36, 48, 60 for ILI)
 Imputation mask ratios: 12.5%, 25%, 37.5%, 50%
 
 Evaluation metrics: MSE, MAE (forecasting/imputation), Accuracy (classification)
-
-Citation
