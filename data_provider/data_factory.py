@@ -28,7 +28,7 @@ def data_provider(args, flag):
             raise ValueError(f"Forecasting dataset {args.dataset_name} not supported.")
     
     elif args.task_name == 'imputation':
-        # Imputation datasets (with masking) - Table 1b in paper
+        # Imputation datasets (with masking)
         if args.dataset_name in ['ETTh1', 'ETTh2', 'ETTm1', 'ETTm2', 'ECL', 'Weather']:
             data_set = Dataset_Imputation(
                 root_path=args.root_path,
@@ -43,7 +43,7 @@ def data_provider(args, flag):
             raise ValueError(f"Imputation dataset {args.dataset_name} not supported.")
     
     elif args.task_name == 'classification':
-        # Classification datasets - Table 3a (UEA) and Table 3b (Cross-domain)
+        # Classification datasets 
         if args.dataset_name in [
             'EthanolConcentration', 'FaceDetection', 'Handwriting', 'Heartbeat',
             'JapaneseVowels', 'PEMS-SF', 'SelfRegulationSCP1', 'SelfRegulationSCP2',
@@ -60,11 +60,11 @@ def data_provider(args, flag):
             'PAMAP2', 'UCI-HAR', 'Rodegast', 'Boubezoul',
             'ActBeCalf', 'MetroPT3', 'NASA'
         ]:
-            # Cross-domain datasets (Table 3b)
+            # Cross-domain datasets 
             data_set = Dataset_HAR(
                 dataset_name=args.dataset_name,
                 flag=flag,
-                data_path=args.root_path  # Assuming HAR data is in root_path
+                data_path=args.root_path  
             )
         
         else:
