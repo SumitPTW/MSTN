@@ -93,9 +93,10 @@ def main():
     parser = argparse.ArgumentParser(description='MSTN: Multi-Scale Temporal Network')
     
     # ===== Required Arguments =====
-    parser.add_argument('--task_name', type=str, required=True, 
-                       choices=['classification', 'imputation', 'long_term_forecast', 'short_term_forecast'],
-                       help='Task to perform')
+       parser.add_argument('--task_name', type=str, required=True, 
+                    choices=['classification', 'imputation', 'long_term_forecast', 'cross_dataset_generalization'],
+                    help='Task to perform')
+    
     parser.add_argument('--model', type=str, required=True,
                        choices=['MSTN_Transformer', 'MSTN_BiLSTM'],
                        help='Model variant')
