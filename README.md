@@ -62,7 +62,6 @@ Expected Output:
 - Forward pass successful
 - MSTN_BiLSTM created successfully
 - Total parameters: 381,410
-- Total parameters: 381,410
 - Tests passed! MSTN forward passes.
 
   
@@ -89,12 +88,3 @@ Expected Output:
   UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA
 
 
-
-
-
-# Verification
-Run `python test_mstn.py` to confirm:
-- MSTN-Transformer: 1,038,818 parameters (~1.04M)
-- MSTN-BiLSTM: 381,410 parameters (~0.40M)
-- Both models compile and execute forward passes
-  
