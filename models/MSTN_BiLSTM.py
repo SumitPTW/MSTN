@@ -31,8 +31,8 @@ class MSTN_BiLSTM(nn.Module):
         )
         
         # --- 2. Early Temporal Aggregation (ETA) ---
-        self.eta_cnn = ETA_Module(pool_type='gap')    # Global Average Pooling for CNN
-        self.eta_seq = ETA_Module(pool_type='mean')   # Sequence Mean Pooling for BiLSTM
+        self.eta_cnn = ETA_Module(pool_type='gap')    
+        self.eta_seq = ETA_Module(pool_type='mean')  
         
         # --- 3. Fusion & Refinement ---
         fused_dim = 64 + 128  # cnn_hidden + lstm_hidden = 192
@@ -58,7 +58,7 @@ class MSTN_BiLSTM(nn.Module):
     def forward(self, x_enc, x_mark_enc=None, x_dec=None, x_mark_dec=None, mask=None):
         # --- 1. Dual Pathway Processing ---
         # CNN path: expects [B, C, L]
-        h_cnn = self.cnn_pathway(x_enc.transpose(1, 2))  # [B, 64, L]
+        h_cnn = self.cnn_pathway(x_enc.transpose(1, 2))  
         # BiLSTM path: expects [B, L, C]
         h_seq = self.seq_pathway(x_enc)  # [B, L, 128]
         
