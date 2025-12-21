@@ -70,3 +70,10 @@ Long-term Forecasting and Imputation: https://github.com/thuml/Autoformer.
 Classification: https://www.timeseriesclassification.com/.
 
 Cross-Domain Datasets (Link/Reference in paper) : UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA, 
+
+## Verification
+Run `python test_mstn.py` to confirm:
+- MSTN-Transformer: 1,038,818 parameters (~1.04M)
+- MSTN-BiLSTM: 381,410 parameters (~0.40M)
+- Both models compile and execute forward passes
+- 
