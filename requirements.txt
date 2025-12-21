@@ -1,0 +1,10 @@
+torch==2.7.1+cu118
+torchaudio==2.7.1+cu118
+torchvision==0.22.1+cu118
+numpy==2.2.4
+pandas==2.3.1
+scipy==1.15.3
+scikit-learn==1.7.1
+joblib==1.5.1
+psutil==7.0.0
+openpyxl==3.1.5
