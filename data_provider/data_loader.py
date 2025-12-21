@@ -52,7 +52,7 @@ class Dataset_Custom(Dataset):
                 data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
                 data_stamp = data_stamp.transpose(1, 0)
         else:
-            # If no date (classification), create dummy marks
+         
             data_stamp = torch.zeros((b2 - b1, 1))
 
         cols_data = [c for c in df_raw.columns if c not in ['date', self.target]]
@@ -112,7 +112,7 @@ class Dataset_Imputation(Dataset):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
         
-        # Same train/val/test split logic
+  
         num_train = int(len(df_raw) * 0.7)
         num_test = int(len(df_raw) * 0.2)
         num_val = len(df_raw) - num_train - num_test
@@ -123,13 +123,13 @@ class Dataset_Imputation(Dataset):
         set_type = type_map[self.flag]
         b1, b2 = border1s[set_type], border2s[set_type]
         
-        # Prepare data (without date columns)
+
         if 'date' in df_raw.columns:
             df_data = df_raw.drop(['date'], axis=1)
         else:
             df_data = df_raw
             
-        # Scale if needed
+  
         if self.scale:
             train_data = df_data.values[border1s[0]:border2s[0]]
             self.scaler.fit(train_data)
@@ -137,24 +137,22 @@ class Dataset_Imputation(Dataset):
         else:
             self.data = df_data.values
         
-        self.data = self.data[b1:b2]  # Slice for current set
+        self.data = self.data[b1:b2]  
 
     def __getitem__(self, index):
-        # Extract sequence
+       
         s_begin = index
         s_end = s_begin + self.seq_len
         seq_original = self.data[s_begin:s_end]  # [seq_len, channels]
-        
-        # Create random mask
+      
         mask = torch.rand(seq_original.shape) > self.mask_ratio
         seq_masked = seq_original * mask.numpy()
         
-        # Convert to tensors
+
         seq_original = torch.FloatTensor(seq_original)
         seq_masked = torch.FloatTensor(seq_masked)
         mask = mask.float()
         
-        # For imputation: return masked sequence, original sequence, and mask
         return seq_masked, seq_original, mask
 
     def __len__(self):
@@ -187,7 +185,7 @@ class Dataset_UEA(Dataset):
                 if not line:
                     continue
                 
-                # Split by colon, first part is label
+
                 parts = line.split(':')
                 if len(parts) < 2:
                     continue
@@ -195,20 +193,20 @@ class Dataset_UEA(Dataset):
                 label = int(float(parts[0].strip()))
                 labels.append(label)
                 
-                # Parse multivariate time series
+    
                 series_data = []
-                # Remaining parts are channels separated by backslash-t
+            
                 channels_str = ':'.join(parts[1:])
                 channels = channels_str.split('\\t')
                 
                 for channel_str in channels:
                     if channel_str.strip():
-                        # Parse comma-separated values
+                    
                         values = [float(x.strip()) for x in channel_str.split(',') if x.strip()]
                         if values:
                             series_data.append(values)
                 
-                # Ensure all channels have same length (trim to shortest)
+            
                 if series_data:
                     min_len = min(len(channel) for channel in series_data)
                     trimmed_data = [channel[:min_len] for channel in series_data]
@@ -218,11 +216,11 @@ class Dataset_UEA(Dataset):
         return data, labels
     
     def __read_data__(self):
-        # UEA datasets are in .ts format
+
         train_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TRAIN.ts')
         test_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TEST.ts')
         
-        # Load the appropriate file
+   
         if self.flag == 'train':
             file_to_load = train_file
         else:  # 'test' or 'val'
@@ -231,17 +229,17 @@ class Dataset_UEA(Dataset):
         if not os.path.exists(file_to_load):
             raise FileNotFoundError(f"UEA dataset file not found: {file_to_load}")
         
-        # Load data using helper
+   
         data_list, labels_list = self.__read_ts_file(file_to_load)
         
         if not data_list:
             raise ValueError(f"No data loaded from {file_to_load}")
         
-        # Find max sequence length for padding
+    
         max_len = max(seq.shape[0] for seq in data_list)
         n_channels = data_list[0].shape[1]
         
-        # Pad sequences to max_len
+ 
         padded_data = []
         for seq in data_list:
             pad_len = max_len - seq.shape[0]
@@ -253,8 +251,7 @@ class Dataset_UEA(Dataset):
         
         self.data = np.stack(padded_data)  # [n_samples, seq_len, n_channels]
         self.labels = np.array(labels_list)
-        
-        # Normalize per channel (z-score normalization)
+   
         for channel_idx in range(self.data.shape[2]):
             channel_data = self.data[:, :, channel_idx]
             mean, std = channel_data.mean(), channel_data.std()
@@ -270,7 +267,7 @@ class Dataset_UEA(Dataset):
         return len(self.data)
 
 # ============================================================================
-# 4. Dataset for Cross-Domain HAR Classification (NEW)
+# 4. Dataset for Cross-Domain 
 # ============================================================================
 class Dataset_HAR(Dataset):
     """
@@ -285,7 +282,7 @@ class Dataset_HAR(Dataset):
         self.__read_data__()
 
     def __read_data__(self):
-        # This is a template - you need to implement actual loading for each dataset
+        
         
         if self.dataset_name == 'PAMAP2':
             # Load PAMAP2 dataset
@@ -314,11 +311,10 @@ class Dataset_HAR(Dataset):
                 all_data = np.random.randn(800, 128, 9)
                 all_labels = np.random.randint(0, 6, 800)
         
-        # Add more datasets as needed: NASA, MetroPT3, etc.
+    
         else:
             raise ValueError(f"Dataset {self.dataset_name} not implemented in Dataset_HAR")
-        
-        # Split into train/val/test (70/10/20)
+      
         n_samples = len(all_data)
         n_train = int(n_samples * 0.7)
         n_val = int(n_samples * 0.1)
