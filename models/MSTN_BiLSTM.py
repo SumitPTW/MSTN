@@ -20,7 +20,7 @@ class MSTN_BiLSTM(nn.Module):
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         
-        # --- 1. Dual Pathways (Paper Section 2.1) ---
+        # --- 1. Dual Pathways  ---
         # CNN pathway for local patterns (same as Transformer variant)
         self.cnn_pathway = MultiScaleCNN(configs.enc_in, cnn_hidden=64)
         # BiLSTM pathway for sequential dependencies
