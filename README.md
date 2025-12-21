@@ -85,7 +85,7 @@ Expected Output:
 # Imputation (6 datasets)
   ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather
   
-# Cross-Domain Generalizability (7 datasets)
+# Cross-Dataset Generalizability (7 datasets)
   UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA
 
 
