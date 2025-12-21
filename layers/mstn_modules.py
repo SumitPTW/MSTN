@@ -37,9 +37,8 @@ class BiLSTMPathway(nn.Module):
         self.lstm_hidden = lstm_hidden
 
     def forward(self, x):
-               h_lstm, _ = self.lstm(x)
+        h_lstm, _ = self.lstm(x)
         return h_lstm
-
 class TransformerPathway(nn.Module):
     """
     Transformer encoder pathway for sequence modeling.
