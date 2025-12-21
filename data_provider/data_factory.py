@@ -25,7 +25,7 @@ def data_provider(args, flag):
             raise ValueError(f"Forecasting dataset {args.dataset_name} not supported.")
     
     elif args.task_name == 'imputation':
-        # Imputation datasets (with masking)
+        # Imputation datasets
         if args.dataset_name in ['ETTh1', 'ETTh2', 'ETTm1', 'ETTm2', 'ECL', 'Weather']:
             data_set = Dataset_Imputation(
                 root_path=args.root_path,
