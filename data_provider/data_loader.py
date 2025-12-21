@@ -277,44 +277,44 @@ class Dataset_CrossDomain(Dataset):
         self.__read_data__()
 
     def __read_data__(self):
-        # All 7 datasets with RAW DATA LOADING
+  
         if self.dataset_name == 'Rodegast':
-            # CSV files from Zenodo
+      
             csv_file = os.path.join(self.data_path, 'Rodegast', 'collision_data.csv')
             df = pd.read_csv(csv_file)
-            # Extract sequences and labels from CSV columns
+       
             all_data, all_labels = self._process_rodegest(df)
         
         elif self.dataset_name == 'Boubezoul':
-            # Excel or CSV files
+      
             data_file = os.path.join(self.data_path, 'Boubezoul', 'fall_data.xlsx')
             df = pd.read_excel(data_file)
             all_data, all_labels = self._process_boubezoul(df)
         
         elif self.dataset_name == 'UCI-HAR':
-            # UCI-HAR has separate train/test TXT files
+      
             train_file = os.path.join(self.data_path, 'UCI-HAR', 'train', 'X_train.txt')
             train_labels = os.path.join(self.data_path, 'UCI-HAR', 'train', 'y_train.txt')
             all_data, all_labels = self._process_uci_har(train_file, train_labels)
         
         elif self.dataset_name == 'PAMAP2':
-            # PAMAP2 has .dat files
+    
             data_file = os.path.join(self.data_path, 'PAMAP2', 'subject101.dat')
             all_data, all_labels = self._process_pamap2(data_file)
         
         elif self.dataset_name == 'ActBeCalf':
-            # CSV with sensor data
+   
             csv_file = os.path.join(self.data_path, 'ActBeCalf', 'calf_behavior.csv')
             df = pd.read_csv(csv_file)
             all_data, all_labels = self._process_actbecalf(df)
         
         elif self.dataset_name == 'MetroPT3':
-            # Multiple CSV files for different sensors
+
             csv_dir = os.path.join(self.data_path, 'MetroPT3', 'csv_files')
             all_data, all_labels = self._process_metropolitan(csv_dir)
         
         elif self.dataset_name == 'NASA':
-            # NASA has multiple CSV files for different engines
+    
             csv_file = os.path.join(self.data_path, 'NASA', 'train_FD001.txt')
             all_data, all_labels = self._process_nasa(csv_file)
         
