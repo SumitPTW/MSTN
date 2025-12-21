@@ -13,8 +13,7 @@ from models import MSTN_Transformer, MSTN_BiLSTM
 from data_provider.data_factory import data_provider
 
 def train_epoch(model, train_loader, optimizer, criterion, task_name, device):
-    """Train for one epoch."""
-    model.train()
+     model.train()
     total_loss = 0
     for batch_idx, batch_data in enumerate(train_loader):
         optimizer.zero_grad()
@@ -32,12 +31,17 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device):
             output = model(x_masked)
             # Masked MSE loss
             loss = criterion(output * mask, x_original * mask)
-        
-        elif task_name in ['long_term_forecast', 'short_term_forecast']:
-            x, y, x_mark, y_mark = batch_data
-            x, y = x.to(device), y.to(device)
-            output = model(x, x_mark, y, y_mark)
-            loss = criterion(output, y)
+
+        elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
+    x, y, x_mark, y_mark = batch_data
+    x, y = x.to(device).float(), y.to(device).float()
+    x_mark = x_mark.to(device).float()
+    y_mark = y_mark.to(device).float()
+
+    output = model(x, x_mark, y, y_mark)
+    y = y[:, -args.pred_len:, :].to(device) 
+    
+    loss = criterion(output, y)
         
         loss.backward()
         optimizer.step()
@@ -49,7 +53,7 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device):
     return total_loss / len(train_loader)
 
 def evaluate(model, data_loader, task_name, device):
-    """Evaluate model on validation/test set."""
+
     model.eval()
     predictions, targets = [], []
     
