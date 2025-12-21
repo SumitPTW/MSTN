@@ -48,8 +48,8 @@ bash
 
 # Model Architecture
 MSTN implements a Multi-scale Temporal Network with Early Temporal Aggregation (ETA):
-<img width="800" height="700" alt="MSTN FINAL" src="https://github.com/user-attachments/assets/d605f7e2-8c21-409e-9cbc-20d5d4ef22e4" />
-<img width="800" height="700" alt="image" src="https://github.com/user-attachments/assets/63cef800-2781-49dc-99d6-cd6bc443c832" />
+<img width="750" height="700" alt="MSTN FINAL" src="https://github.com/user-attachments/assets/d605f7e2-8c21-409e-9cbc-20d5d4ef22e4" />
+<img width="750" height="700" alt="image" src="https://github.com/user-attachments/assets/63cef800-2781-49dc-99d6-cd6bc443c832" />
 
 
 ┌─────────────────────────────────────────────────────┐
