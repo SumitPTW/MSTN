@@ -3,21 +3,40 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class MultiScaleCNN(nn.Module):
-    """CNN pathway for local temporal patterns. Output shape: [B, C, L] for pooling."""
+    """
+    Multi-scale Convolutional Neural Network pathway.
+    Extracts local temporal patterns through hierarchical convolutions.
+    As per paper: Conv1D_7 + BN + ReLU -> Conv1D_5 + ReLU
+    Output shape: [Batch, Channels_Out, Length] for channel-first pooling.
+    """
     def __init__(self, c_in, cnn_hidden=64):
         super().__init__()
+        # First convolution: kernel size 7, maintains length with padding
         self.conv1 = nn.Conv1d(c_in, 128, kernel_size=7, padding=3)
         self.bn1 = nn.BatchNorm1d(128)
+        # Second convolution: kernel size 5
         self.conv2 = nn.Conv1d(128, cnn_hidden, kernel_size=5, padding=2)
 
     def forward(self, x):
-        # Input x shape: [Batch, Channels, Length]
-        x = F.relu(self.bn1(self.conv1(x)))  # [B, 128, L]
-        x = F.relu(self.conv2(x))            # [B, cnn_hidden, L]
-        return x  # Keep as [B, C, L] for channel-first pooling
+        """
+        Args:
+            x: Input tensor of shape [Batch, Channels, Length]
+        Returns:
+            Output tensor of shape [Batch, cnn_hidden, Length]
+        """
+        # Conv1D_7 + BatchNorm + ReLU
+        x = F.relu(self.bn1(self.conv1(x)))
+        # Conv1D_5 + ReLU
+        x = F.relu(self.conv2(x))
+        return x
 
 class BiLSTMPathway(nn.Module):
-    """BiLSTM pathway for long-range dependencies. Output shape: [B, L, H]."""
+    """
+    Bidirectional LSTM pathway for sequence modeling.
+    Captures long-range bidirectional temporal dependencies.
+    As per paper: 2 layers, 64 hidden units per direction -> 128 total.
+    Output shape: [Batch, Length, Features]
+    """
     def __init__(self, c_in, lstm_hidden=128, num_layers=2):
         super().__init__()
         # BiLSTM: hidden_size is per direction
@@ -31,21 +50,47 @@ class BiLSTMPathway(nn.Module):
         self.lstm_hidden = lstm_hidden
 
     def forward(self, x):
-        # Input x shape: [Batch, Length, Channels]
-        h_lstm, _ = self.lstm(x)  # [B, L, lstm_hidden]
+        """
+        Args:
+            x: Input tensor of shape [Batch, Length, Channels]
+        Returns:
+            Output tensor of shape [Batch, Length, lstm_hidden]
+        """
+        h_lstm, _ = self.lstm(x)
         return h_lstm
 
 class TransformerPathway(nn.Module):
-    """Transformer pathway for long-range dependencies. Output shape: [B, L, H]."""
+    """
+    Transformer encoder pathway for sequence modeling.
+    Captures long-range dependencies via self-attention.
+    As per paper: 4 layers, 8 attention heads, d_model=128.
+    Output shape: [Batch, Length, d_model]
+    """
     def __init__(self, c_in, d_model=128, nhead=8, num_layers=4):
         super().__init__()
+        # Project input to transformer dimension
         self.input_proj = nn.Linear(c_in, d_model)
+        
+        # Transformer encoder layers
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_model, nhead=nhead, batch_first=True
+            d_model=d_model,
+            nhead=nhead,
+            dim_feedforward=d_model*4,
+            dropout=0.1,
+            batch_first=True,
+            activation='gelu'
         )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers
+        )
 
     def forward(self, x):
-        # Input x shape: [Batch, Length, Channels]
-        x_proj = self.input_proj(x)  # [B, L, d_model]
+        """
+        Args:
+            x: Input tensor of shape [Batch, Length, Channels]
+        Returns:
+            Output tensor of shape [Batch, Length, d_model]
+        """
+        x_proj = self.input_proj(x)
         return self.transformer(x_proj)
