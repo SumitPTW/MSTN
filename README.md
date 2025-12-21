@@ -1,4 +1,4 @@
-#MSTN: Fast and Efficient Multivariate Time Series Model
+# MSTN: Fast and Efficient Multivariate Time Series Model
 Setup
 
 # Install dependencies
