@@ -2,40 +2,41 @@
 Setup
 
 # Install dependencies
-pip install torch torchvision torchaudio
-pip install datasetsforecast aeon scikit-learn numpy pandas
-pip install aeon
-pip install scikit-learn numpy
+- pip install torch numpy pandas scikit-learn
+- pip install torch torchvision torchaudio
+- pip install aeon
+- pip install datasetsforecast aeon scikit-learn numpy pandas
+- pip install scikit-learn numpy
 
 # Installation - Clone repository
 git clone https://github.com/SumitPTW/MSTN.git
 cd MSTN
 
-# Install dependencies
-pip install torch numpy pandas scikit-learn
-Quick Verification- Run this simple test to verify MSTN works:
 
-python test_mstn.py
+# Quick Verification- Run this simple test to verify MSTN works:
+
+Run python test_mstn.py
 
 Expected Output:
-MSTN_Transformer created successfully
-Total parameters: 1,038,818
-Forward pass successful
-MSTN_BiLSTM created successfully
-Total parameters: 381,410 
-Forward pass successful
+- MSTN_Transformer created successfully
+- Total parameters: 1,038,818
+- Forward pass successful
+- MSTN_BiLSTM created successfully
+- Total parameters: 381,410
+- Total parameters: 381,410
+- Tests passed! MSTN forward passes.
 
-✅ Tests passed! MSTN forward passes.
-📋 Configuration
-Setting	Value
-Model	MSTN-Transformer or MSTN-BiLSTM
-Lookback window	96 (36 for ILI)
-Prediction horizons	96, 192, 336, 720 (24, 36, 48, 60 for ILI)
-Imputation mask ratios	12.5%, 25%, 37.5%, 50%
-Evaluation metrics	MSE, MAE (forecasting/imputation), Accuracy (classification)
-🔬 Reproducing Experiments
+  
+# Configuration
+- Setting	Value
+- Model	MSTN-Transformer or MSTN-BiLSTM
+- Lookback window	96 (36 for ILI)
+- Prediction horizons	96, 192, 336, 720 (24, 36, 48, 60 for ILI)
+- Imputation mask ratios	12.5%, 25%, 37.5%, 50%
+- Evaluation metrics	MSE, MAE (forecasting/imputation), Accuracy (classification)
 
-bash
+# Reproducing Experiments
+
 # Forecasting (9 datasets)
   ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather, Traffic, Exchange, ILI
 
