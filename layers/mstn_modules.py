@@ -13,7 +13,6 @@ class MultiScaleCNN(nn.Module):
         self.conv2 = nn.Conv1d(128, cnn_hidden, kernel_size=5, padding=2)
 
     def forward(self, x):
-     
         # Conv1D_7 + BatchNorm + ReLU
         x = F.relu(self.bn1(self.conv1(x)))
         # Conv1D_5 + ReLU
@@ -23,13 +22,13 @@ class MultiScaleCNN(nn.Module):
 class BiLSTMPathway(nn.Module):
     """
     Bidirectional LSTM pathway for sequence modeling.
-       """
+    """
     def __init__(self, c_in, lstm_hidden=128, num_layers=2):
         super().__init__()
         # BiLSTM: hidden_size is per direction
         self.lstm = nn.LSTM(
             input_size=c_in,
-            hidden_size=lstm_hidden // 2,  
+            hidden_size=lstm_hidden // 2,
             num_layers=num_layers,
             batch_first=True,
             bidirectional=True
@@ -39,6 +38,7 @@ class BiLSTMPathway(nn.Module):
     def forward(self, x):
         h_lstm, _ = self.lstm(x)
         return h_lstm
+
 class TransformerPathway(nn.Module):
     """
     Transformer encoder pathway for sequence modeling.
@@ -63,6 +63,5 @@ class TransformerPathway(nn.Module):
         )
 
     def forward(self, x):
-      
         x_proj = self.input_proj(x)
         return self.transformer(x_proj)
