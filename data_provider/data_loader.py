@@ -69,18 +69,17 @@ border2s = [num_train, num_train + num_val, len(df_raw)]
         self.data_y = df_raw[self.target].values[b1:b2]
         self.data_stamp = data_stamp
 
+
     def __getitem__(self, index):
-        s_begin = index
+            s_begin = index
         s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
-        r_end = r_begin + self.label_len + self.pred_len
-
-        seq_x = self.data_x[s_begin:s_end]
-        seq_y = self.data_x[r_begin:r_end]
-        seq_x_mark = self.data_stamp[s_begin:s_end]
-        seq_y_mark = self.data_stamp[r_begin:r_end]
-
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        
+        seq_x = self.data_x[s_begin:s_end]  
+        label = self.data_y[s_end-1]       
+               
+        seq_x_mark = np.zeros_like(seq_x)
+        
+        return seq_x, label  
 
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
