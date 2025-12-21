@@ -73,6 +73,9 @@ Dual-path Encoding: CNN (local) + Transformer/BiLSTM (global)
 
 Parameter Efficiency: ~1.04M (Transformer) and ~0.40M (BiLSTM) parameters
 
+📁 Project Structure text MSTN/ ├── models/ │ ├── MSTN_Transformer.py # MSTN-Transformer implementation │ ├── MSTN_BiLSTM.py # MSTN-BiLSTM implementation │ └── init.py ├── layers/ │ ├── eta_module.py # Early Temporal Aggregation │ ├── sgf_module.py # Self-Gated Fusion │ ├── se_block.py # Squeeze-and-Excitation │ ├── mha_recalibration.py # Multi-head Attention recalibration │ └── mstn_modules.py # CNN/BiLSTM/Transformer pathways ├── data_provider/ │ ├── data_factory.py # Dataset loader │ └── data_loader.py ├── utils/ │ ├── tools.py │ └── timefeatures.py ├── run_main.py # Main training/evaluation script ├── test_mstn.py # Verification test for reviewers ├── requirements.txt # Dependencies └── README.md # This file
+
+
 📁 Project Structure
 text
 MSTN/
