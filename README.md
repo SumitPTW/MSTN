@@ -1,8 +1,5 @@
 Setup
-bash
-# Clone repository
-git clone https://github.com/yourusername/MSTN.git
-cd MSTN
+
 
 # Install dependencies
 pip install torch torchvision torchaudio
