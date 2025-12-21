@@ -4,7 +4,8 @@ Setup
 # Install dependencies
 pip install torch torchvision torchaudio
 pip install datasetsforecast aeon scikit-learn numpy pandas
-
+pip install aeon
+pip install scikit-learn numpy
 
 # Installation - Clone repository
 git clone https://github.com/SumitPTW/MSTN.git
