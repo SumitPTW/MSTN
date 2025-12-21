@@ -45,7 +45,21 @@ bash
 # Imputation (6 datasets)
   ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather
 
-
+┌─────────────────────────────────────────────────────┐
+│      Input: [Batch, Sequence Length, Channels]      │
+├─────────────────────────────────────────────────────┤
+│ Dual-path Encoding:                                 │
+│  • CNN Branch: Multi-scale local patterns           │
+│  • Sequence Branch: Transformer/BiLSTM (Long-range) │
+├─────────────────────────────────────────────────────┤
+│      Early Temporal Aggregation (ETA): L → 1        │
+├─────────────────────────────────────────────────────┤
+│                Feature Concatenation                │
+├─────────────────────────────────────────────────────┤
+│       Self-Gated Fusion + SE + MHA Refinement       │
+├─────────────────────────────────────────────────────┤
+│                Task-specific Output                 │
+└─────────────────────────────────────────────────────┘
 # Model Architecture
 MSTN implements a Multi-scale Temporal Network with Early Temporal Aggregation (ETA):
 
