@@ -1,34 +1,28 @@
 #MSTN: Fast and Efficient Multivariate Time Series Model
 Setup
 
-
 # Install dependencies
 pip install torch torchvision torchaudio
 pip install datasetsforecast aeon scikit-learn numpy pandas
-Reproducing Experiments
-Forecasting (9 datasets)
-bash
-Installation
-bash
-# Clone repository
+
+
+# Installation - Clone repository
 git clone https://github.com/SumitPTW/MSTN.git
 cd MSTN
 
 # Install dependencies
 pip install torch numpy pandas scikit-learn
-Quick Verification for Reviewers
-Run this simple test to verify MSTN works:
+Quick Verification- Run this simple test to verify MSTN works:
+
 python test_mstn.py
+
 Expected Output:
-
-text
-✅ MSTN_Transformer created successfully
-   Total parameters: 1,038,818 (~1.04M in paper)
-✅ Forward pass successful
-
-✅ MSTN_BiLSTM created successfully
-   Total parameters: 381,410 (~0.40M in paper)
-✅ Forward pass successful
+MSTN_Transformer created successfully
+Total parameters: 1,038,818
+Forward pass successful
+MSTN_BiLSTM created successfully
+Total parameters: 381,410 
+Forward pass successful
 
 ✅ Tests passed! MSTN forward passes.
 📋 Configuration
