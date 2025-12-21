@@ -7,11 +7,11 @@ Multi-scale Temporal Network (MSTN), a hybrid neural architecture grounded in an
 # MSTN multi-scale signal processing pipeline
 <img width="750" height="700" alt="image" src="https://github.com/user-attachments/assets/82936e1d-4959-47dc-bd9e-5864e7a17ad2" />
 
-# Key Innovations:
+# Core Innovation: Dual-Path Design and Early Temporal Aggregation (ETA)
 
-Early Temporal Aggregation (ETA): Collapses sequence dimension early for O(1) inference
+Dual-path Encoding: CNN (local) + Transformer/BiLSTM (global): parallel encoding strategy in which a global sequence-modeling pathway (Transformer or BiLSTM; CD strategy) captures long-range temporal dependencies, while a lightweight convolutional pathway (CI strategy; O(L)) extracts fine-grained local temporal patterns.
 
-Dual-path Encoding: CNN (local) + Transformer/BiLSTM (global)
+Efficiency through ETA: collapsing O(L2) to O(1). MSTN applies the ETA mechanism immediately after the high-capacity encoders, collapsing the temporal dimension (L → 1) via learned sequence aggregation. By performing the computationally intensive operations (e.g., O(L2) Transformer self-attention) before this aggregation step, the subsequent refinement layers—including feature fusion, SE recalibration, MHA, and prediction modules—operate with a fixed O(1) cost with respect to L. 
 
 Parameter Efficiency: ~1.04M (Transformer) and ~0.40M (BiLSTM) parameters
 
