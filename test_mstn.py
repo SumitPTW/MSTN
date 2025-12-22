@@ -5,6 +5,7 @@ MSTN Basic Functional Test Script.
 import sys
 import torch
 
+
 sys.path.append('.')
 
 def test_mstn_transformer():
@@ -14,17 +15,16 @@ def test_mstn_transformer():
     print("="*60)
     
     try:
-        # Import your model
+    
         from models import MSTN_Transformer
         
-        # Create a mock configuration object
         class MockConfig:
             task_name = 'classification'
             seq_len = 96
             enc_in = 7
             num_class = 10
             dropout = 0.1
-            # Add other attributes your model __init__ expects
+         
             pred_len = 96
             c_out = 7
             d_model = 128
