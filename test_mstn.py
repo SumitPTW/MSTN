@@ -36,7 +36,7 @@ def test_mstn_transformer():
         
         # Create model
         model = MSTN_Transformer(config)
-        print(f"✅ MSTN_Transformer created successfully")
+        print(f" MSTN_Transformer created successfully")
         
         # Count parameters
         total_params = sum(p.numel() for p in model.parameters())
@@ -47,14 +47,14 @@ def test_mstn_transformer():
         x = torch.randn(batch_size, config.seq_len, config.enc_in)
         output = model(x)
         
-        print(f"✅ Forward pass successful")
+        print(f" Forward pass successful")
         print(f"   Input shape:  {x.shape}")
         print(f"   Output shape: {output.shape}")
         
         return True
         
     except Exception as e:
-        print(f"❌ MSTN_Transformer test failed: {e}")
+        print(f" MSTN_Transformer test failed: {e}")
         return False
 
 def test_mstn_bilstm():
@@ -82,7 +82,7 @@ def test_mstn_bilstm():
         config = MockConfig()
         
         model = MSTN_BiLSTM(config)
-        print(f"✅ MSTN_BiLSTM created successfully")
+        print(f" MSTN_BiLSTM created successfully")
         
         total_params = sum(p.numel() for p in model.parameters())
         print(f"   Total parameters: {total_params:,}")
@@ -91,14 +91,14 @@ def test_mstn_bilstm():
         x = torch.randn(batch_size, config.seq_len, config.enc_in)
         output = model(x)
         
-        print(f"✅ Forward pass successful")
+        print(f" Forward pass successful")
         print(f"   Input shape:  {x.shape}")
         print(f"   Output shape: {output.shape}")
         
         return True
         
     except Exception as e:
-        print(f"❌ MSTN_BiLSTM test failed: {e}")
+        print(f" MSTN_BiLSTM test failed: {e}")
         return False
 
 def main():
@@ -117,10 +117,10 @@ def main():
     print("="*60)
     
     if success_transformer and success_bilstm:
-        print("✅ Tests passed! MSTN")
+        print(" Tests passed! MSTN")
         print("forward passes.")
     else:
-        print("❌ Some tests failed. Please check the errors above.")
+        print(" Some tests failed. Please check the errors above.")
         sys.exit(1)
 
 if __name__ == "__main__":
