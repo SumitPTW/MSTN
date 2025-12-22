@@ -5,7 +5,6 @@ MSTN Basic Functional Test Script.
 import sys
 import torch
 
-# Ensure the local modules can be imported
 sys.path.append('.')
 
 def test_mstn_transformer():
