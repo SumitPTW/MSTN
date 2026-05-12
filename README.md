@@ -31,7 +31,7 @@ MSTN/
 │ ├── eta_module.py # Early Temporal Aggregation
 │ ├── sgf_module.py # Self-Gated Fusion
 │ ├── se_block.py # Squeeze-and-Excitation
-│ ├── mha_recalibration.py # Multi-head Attention recalibration
+│ ├── single_dense_layer.py # Single Dense layer 
 │ └── mstn_modules.py # CNN/BiLSTM/Transformer pathways
 ├── data_provider/
 │ ├── data_factory.py # Dataset loader
