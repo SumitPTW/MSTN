@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-MSTN Imputation M→M Test Script
-Shows Multivariate to Multivariate for all datasets
+MSTN Multivariate to Multivariate Test Script
 """
 import sys
 import torch
@@ -198,7 +197,7 @@ def main():
     
     # Parameter summary for paper (ONLY 7-feature)
     print("\n" + "="*60)
-    print("PARAMETER SUMMARY (for your paper)")
+    print("PARAMETER SUMMARY")
     print("="*60)
     
     trans_7 = get_params('MSTN_Transformer', 7, 'imputation')
