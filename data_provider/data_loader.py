@@ -153,15 +153,18 @@ class Dataset_Imputation(Dataset):
     def __len__(self):
         return len(self.data) - self.seq_len + 1
 
-
 # ============================================================================
 # 3. Dataset for UEA Classification Tasks (10 datasets)
 # ============================================================================
 class Dataset_UEA(Dataset):
+    """
+    UEA classification dataset loader.
+    Uses official UEA train/test splits from local .ts files.
+    
+    Output format: [channels, time_steps] matching your CNN input.
+    """
     def __init__(self, dataset_name, flag='train', data_path='./datasets/UEA/'):
         """
-        UEA classification dataset loader.
-        
         Args:
             dataset_name: Name of the UEA dataset (e.g., 'EthanolConcentration')
             flag: 'train' or 'test' (uses official UEA splits)
@@ -173,7 +176,7 @@ class Dataset_UEA(Dataset):
         self.__read_data__()
     
     def __read_ts_file(self, file_path):
-        """Read UEA .ts file format"""
+        """Read UEA .ts file format."""
         data, labels = [], []
         with open(file_path, 'r') as f:
             for line in f:
@@ -211,7 +214,7 @@ class Dataset_UEA(Dataset):
         return data, labels
     
     def __read_data__(self):
-        """Load train or test split from UEA archive"""
+        """Load train or test split from UEA archive."""
         train_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TRAIN.ts')
         test_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TEST.ts')
         
@@ -246,7 +249,7 @@ class Dataset_UEA(Dataset):
         self.data = np.stack(padded_data)  # Shape: [samples, channels, time_steps]
         self.labels = np.array(labels_list)
         
-        # Z-score normalization per channel (matching your classification script)
+        # Z-score normalization per channel
         for channel_idx in range(self.data.shape[1]):
             channel_data = self.data[:, channel_idx, :]
             mean, std = channel_data.mean(), channel_data.std()
@@ -260,9 +263,7 @@ class Dataset_UEA(Dataset):
         return sequence, label
     
     def __len__(self):
-        return len(self.data)
-
-
+        return len(self.data) 
 # ============================================================================
 # 4. Dataset for Cross-Domain Evaluation (7 datasets)
 # ============================================================================
