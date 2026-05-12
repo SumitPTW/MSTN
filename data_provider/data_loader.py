@@ -159,12 +159,21 @@ class Dataset_Imputation(Dataset):
 # ============================================================================
 class Dataset_UEA(Dataset):
     def __init__(self, dataset_name, flag='train', data_path='./datasets/UEA/'):
+        """
+        UEA classification dataset loader.
+        
+        Args:
+            dataset_name: Name of the UEA dataset (e.g., 'EthanolConcentration')
+            flag: 'train' or 'test' (uses official UEA splits)
+            data_path: Root path containing UEA dataset folders
+        """
         self.dataset_name = dataset_name
         self.flag = flag
         self.data_path = data_path
         self.__read_data__()
     
     def __read_ts_file(self, file_path):
+        """Read UEA .ts file format"""
         data, labels = [], []
         with open(file_path, 'r') as f:
             for line in f:
@@ -172,13 +181,16 @@ class Dataset_UEA(Dataset):
                 if not line:
                     continue
                 
+                # Split label and time series data
                 parts = line.split(':')
                 if len(parts) < 2:
                     continue
                 
+                # Extract label (first part)
                 label = int(float(parts[0].strip()))
                 labels.append(label)
                 
+                # Extract time series data (remaining parts)
                 series_data = []
                 channels_str = ':'.join(parts[1:])
                 channels = channels_str.split('\t')
@@ -189,14 +201,17 @@ class Dataset_UEA(Dataset):
                         if values:
                             series_data.append(values)
                 
+                # Trim all channels to same length
                 if series_data:
                     min_len = min(len(channel) for channel in series_data)
                     trimmed_data = [channel[:min_len] for channel in series_data]
+                    # Shape: [time_steps, channels] → Transpose to [channels, time_steps]
                     data.append(np.array(trimmed_data).T)
         
         return data, labels
     
     def __read_data__(self):
+        """Load train or test split from UEA archive"""
         train_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TRAIN.ts')
         test_file = os.path.join(self.data_path, self.dataset_name, f'{self.dataset_name}_TEST.ts')
         
@@ -213,30 +228,34 @@ class Dataset_UEA(Dataset):
         if not data_list:
             raise ValueError(f"No data loaded from {file_to_load}")
         
-        max_len = max(seq.shape[0] for seq in data_list)
-        n_channels = data_list[0].shape[1]
+        # Pad sequences to same length
+        max_len = max(seq.shape[1] for seq in data_list)  # time dimension
+        n_channels = data_list[0].shape[0]  # channels
         
         padded_data = []
         for seq in data_list:
-            pad_len = max_len - seq.shape[0]
-            if pad_len > 0:
-                padded_seq = np.pad(seq, ((0, pad_len), (0, 0)), mode='constant', constant_values=0)
+            curr_len = seq.shape[1]
+            if curr_len < max_len:
+                # Pad with zeros
+                pad_width = ((0, 0), (0, max_len - curr_len))
+                padded_seq = np.pad(seq, pad_width, mode='constant', constant_values=0)
             else:
                 padded_seq = seq
             padded_data.append(padded_seq)
         
-        self.data = np.stack(padded_data)
+        self.data = np.stack(padded_data)  # Shape: [samples, channels, time_steps]
         self.labels = np.array(labels_list)
         
-        # Normalize per channel
-        for channel_idx in range(self.data.shape[2]):
-            channel_data = self.data[:, :, channel_idx]
+        # Z-score normalization per channel (matching your classification script)
+        for channel_idx in range(self.data.shape[1]):
+            channel_data = self.data[:, channel_idx, :]
             mean, std = channel_data.mean(), channel_data.std()
             if std > 1e-8:
-                self.data[:, :, channel_idx] = (channel_data - mean) / std
+                self.data[:, channel_idx, :] = (channel_data - mean) / std
     
     def __getitem__(self, index):
-        sequence = torch.FloatTensor(self.data[index])
+        """Returns: sequence [channels, time_steps], label"""
+        sequence = torch.FloatTensor(self.data[index])  # [channels, time_steps]
         label = torch.LongTensor([self.labels[index]])[0]
         return sequence, label
     
