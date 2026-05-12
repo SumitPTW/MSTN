@@ -64,12 +64,18 @@ MSTN/
 Run python test_mstn.py
 
 Expected Output:
-- MSTN_Transformer created successfully
-- Total parameters: 1,038,818
-- Forward pass successful
-- MSTN_BiLSTM created successfully
-- Total parameters: 381,410
-- Tests passed! MSTN forward passes.
+## M→M Verification Results
+
+All models successfully preserve feature dimensionality:
+
+| Model | ETTh (7) | ECL (321) | Weather (21) |
+|-------|----------|-----------|--------------|
+| MSTN-Transformer | ✅ 7→7 | ✅ 321→321 | ✅ 21→21 |
+| MSTN-BiLSTM | ✅ 7→7 | ✅ 321→321 | ✅ 21→21 |
+
+**Parameter counts (for 7-feature datasets):**
+- MSTN-Transformer: **1.06M**
+- MSTN-BiLSTM: **0.40M**
 
   
 # Configuration
