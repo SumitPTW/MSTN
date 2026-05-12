@@ -38,10 +38,6 @@ def test_imputation_m2m(model_name, dataset_name, num_features):
         config = Config()
         model = ModelClass(config)
         
-        # Count parameters
-        params = sum(p.numel() for p in model.parameters())
-        print(f"   Parameters: {params:,}")
-        
         # Test forward pass
         batch_size = 4
         x = torch.randn(batch_size, config.seq_len, config.enc_in)
@@ -52,14 +48,14 @@ def test_imputation_m2m(model_name, dataset_name, num_features):
         
         if x.shape[2] == output.shape[2]:
             print(f"   ✅ M→M: {num_features} → {num_features} features")
-            return True, params
+            return True
         else:
             print(f"   ❌ M→M FAILED!")
-            return False, params
+            return False
             
     except Exception as e:
         print(f"   ❌ Error: {e}")
-        return False, 0
+        return False
 
 
 def test_forecasting_m2m(model_name, dataset_name, num_features):
@@ -92,10 +88,6 @@ def test_forecasting_m2m(model_name, dataset_name, num_features):
         config = Config()
         model = ModelClass(config)
         
-        # Count parameters
-        params = sum(p.numel() for p in model.parameters())
-        print(f"   Parameters: {params:,}")
-        
         # Test forward pass
         batch_size = 4
         x = torch.randn(batch_size, config.seq_len, config.enc_in)
@@ -106,14 +98,49 @@ def test_forecasting_m2m(model_name, dataset_name, num_features):
         
         if x.shape[2] == output.shape[2]:
             print(f"   ✅ M→M: {num_features} sensors → {num_features} sensors")
-            return True, params
+            return True
         else:
             print(f"   ❌ M→M FAILED!")
-            return False, params
+            return False
             
     except Exception as e:
         print(f"   ❌ Error: {e}")
-        return False, 0
+        return False
+
+
+def get_params(model_name, num_features, task='imputation'):
+    """Get parameters for a model without printing."""
+    
+    try:
+        if model_name == 'MSTN_Transformer':
+            from models import MSTN_Transformer as ModelClass
+        else:
+            from models import MSTN_BiLSTM as ModelClass
+        
+        class Config:
+            if task == 'forecasting':
+                task_name = 'long_term_forecast'
+            else:
+                task_name = 'imputation'
+            seq_len = 96
+            pred_len = 96
+            enc_in = num_features
+            c_out = num_features
+            dropout = 0.1
+            num_class = 10
+            d_model = 128
+            n_heads = 8
+            e_layers = 4
+            d_ff = 512
+        
+        config = Config()
+        model = ModelClass(config)
+        
+        return sum(p.numel() for p in model.parameters())
+        
+    except Exception as e:
+        print(f"   ❌ Error: {e}")
+        return 0
 
 
 def main():
@@ -141,8 +168,7 @@ def main():
     ]
     
     models = ["MSTN_Transformer", "MSTN_BiLSTM"]
-    
-    results = []
+    all_passed = True
     
     # Test imputation datasets
     for model in models:
@@ -151,15 +177,9 @@ def main():
         print(f"{'#'*60}")
         
         for dataset_name, num_features in imputation_datasets:
-            success, params = test_imputation_m2m(model, dataset_name, num_features)
-            results.append({
-                'Model': model,
-                'Dataset': dataset_name,
-                'Features': num_features,
-                'Parameters': params,
-                'Success': success,
-                'Task': 'Imputation'
-            })
+            success = test_imputation_m2m(model, dataset_name, num_features)
+            if not success:
+                all_passed = False
     
     # Test forecasting datasets (PEMS)
     for model in models:
@@ -168,51 +188,25 @@ def main():
         print(f"{'#'*60}")
         
         for dataset_name, num_features in forecasting_datasets:
-            success, params = test_forecasting_m2m(model, dataset_name, num_features)
-            results.append({
-                'Model': model,
-                'Dataset': dataset_name,
-                'Features': num_features,
-                'Parameters': params,
-                'Success': success,
-                'Task': 'Forecasting'
-            })
+            success = test_forecasting_m2m(model, dataset_name, num_features)
+            if not success:
+                all_passed = False
     
-    # Summary Table
-    print("\n" + "="*80)
-    print("SUMMARY TABLE")
-    print("="*80)
-    print(f"\n{'Model':<20} {'Task':<12} {'Dataset':<12} {'Features':<10} {'Parameters':<12} {'M→M':<6}")
-    print("-" * 80)
+    if not all_passed:
+        print("\n❌ Some tests failed!")
+        sys.exit(1)
     
-    for r in results:
-        m2m = "✅" if r['Success'] else "❌"
-        print(f"{r['Model']:<20} {r['Task']:<12} {r['Dataset']:<12} {r['Features']:<10} {r['Parameters']:<12,} {m2m:<6}")
-    
-    # Parameter summary for paper
+    # Parameter summary for paper (ONLY 7-feature)
     print("\n" + "="*60)
     print("PARAMETER SUMMARY (for your paper)")
     print("="*60)
     
-    # Find parameters for 7-feature datasets
-    trans_7 = None
-    bilstm_7 = None
-    for r in results:
-        if r['Model'] == 'MSTN_Transformer' and r['Features'] == 7 and r['Task'] == 'Imputation':
-            trans_7 = r['Parameters']
-        if r['Model'] == 'MSTN_BiLSTM' and r['Features'] == 7 and r['Task'] == 'Imputation':
-            bilstm_7 = r['Parameters']
+    trans_7 = get_params('MSTN_Transformer', 7, 'imputation')
+    bilstm_7 = get_params('MSTN_BiLSTM', 7, 'imputation')
     
-    if trans_7 and bilstm_7:
-        print(f"\n📊 For 7-feature datasets (ETTh1, ETTh2, ETTm1, ETTm2):")
-        print(f"   MSTN-Transformer: {trans_7:,} (~{trans_7/1e6:.2f}M)")
-        print(f"   MSTN-BiLSTM:      {bilstm_7:,} (~{bilstm_7/1e6:.2f}M)")
-    
-    # Find PEMS parameters
-    print(f"\n📊 For PEMS datasets (Forecasting):")
-    for r in results:
-        if r['Task'] == 'Forecasting' and r['Model'] == 'MSTN_Transformer':
-            print(f"   {r['Dataset']} ({r['Features']} sensors): {r['Parameters']:,} (~{r['Parameters']/1e6:.2f}M)")
+    print(f"\nFor 7-feature datasets (ETTh1, ETTh2, ETTm1, ETTm2):")
+    print(f"   MSTN-Transformer: {trans_7:,} (~{trans_7/1e6:.2f}M)")
+    print(f"   MSTN-BiLSTM:      {bilstm_7:,} (~{bilstm_7/1e6:.2f}M)")
     
     print("\n" + "="*60)
     print("✅ ALL M→M TESTS COMPLETED")
