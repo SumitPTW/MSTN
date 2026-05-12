@@ -26,7 +26,7 @@ MSTN/
 ├── models/
 │ ├── MSTN_Transformer.py # MSTN-Transformer implementation
 │ ├── MSTN_BiLSTM.py # MSTN-BiLSTM implementation
-│ └── init.py
+│ └── __init__.py
 ├── layers/
 │ ├── eta_module.py # Early Temporal Aggregation
 │ ├── sgf_module.py # Self-Gated Fusion
