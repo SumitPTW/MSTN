@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
 
 # ============================================================================
-# 1. Dataset for PEMS Forecasting Tasks (Only dataset in paper)
+# 1. Dataset for PEMS Forecasting Tasks 
 # ============================================================================
 class Dataset_PEMS(Dataset):
     def __init__(self, root_path, flag='train', size=None,
