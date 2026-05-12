@@ -7,33 +7,36 @@ from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
 
 # ============================================================================
-# 1. Dataset for Forecasting Tasks
+# 1. Dataset for PEMS Forecasting Tasks (Only dataset in paper)
 # ============================================================================
-class Dataset_Custom(Dataset):
+class Dataset_PEMS(Dataset):
     def __init__(self, root_path, flag='train', size=None,
-                 features='M', data_path='data.csv',
-                 target='OT', scale=True, timeenc=0, freq='h'):
+                 features='M', data_path='data.npz', scale=True):
         self.seq_len = size[0]
         self.label_len = size[1]
         self.pred_len = size[2]
         self.root_path = root_path
         self.data_path = data_path
-        self.target = target
         self.scale = scale
-        self.timeenc = timeenc
-        self.freq = freq
         self.flag = flag
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
-
-        num_train = int(len(df_raw) * 0.7)
-        num_test = int(len(df_raw) * 0.2)
-        num_val = len(df_raw) - num_train - num_test
-        border1s = [0, num_train, num_train + num_val]
-        border2s = [num_train, num_train + num_val, len(df_raw)]
+        data = np.load(os.path.join(self.root_path, self.data_path))['data']
+        
+        # Use traffic flow data (feature index 0)
+        if data.ndim == 3:
+            data = data[:, :, 0]
+        
+        data = np.nan_to_num(data, nan=0.0)
+        total_len = len(data)
+        
+        train_end = int(total_len * 0.6)
+        val_end = int(total_len * 0.8)
+        
+        border1s = [0, train_end - self.seq_len, val_end - self.seq_len]
+        border2s = [train_end, val_end, total_len]
         
         type_map = {'train': 0, 'val': 1, 'test': 2}
         set_type = type_map[self.flag]
@@ -43,57 +46,35 @@ class Dataset_Custom(Dataset):
         else:
             b1, b2 = border1s[set_type] - self.seq_len, border2s[set_type]
 
-        if 'date' in df_raw.columns:
-            df_stamp = df_raw[['date']][b1:b2]
-            df_stamp['date'] = pd.to_datetime(df_stamp.date)
-            if self.timeenc == 0:
-                df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
-                df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
-                df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
-                df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
-                data_stamp = df_stamp.drop(['date'], axis=1).values
-            else:
-                data_stamp = time_features(pd.to_datetime(df_stamp['date'].values), freq=self.freq)
-                data_stamp = data_stamp.transpose(1, 0)
-        else:
-            data_stamp = np.zeros((b2 - b1, 1))
-
-        cols_data = [c for c in df_raw.columns if c not in ['date', self.target]]
-        df_data = df_raw[cols_data]
-
         if self.scale:
-            train_data = df_data.values[border1s[0]:border2s[0]]
-            self.scaler.fit(train_data)
-            data = self.scaler.transform(df_data.values)
+            train_data = data[border1s[0]:border2s[0]]
+            self.scaler.fit(train_data.reshape(-1, 1))
+            data = self.scaler.transform(data.reshape(-1, 1)).reshape(-1)
         else:
-            data = df_data.values
+            data = data
 
         self.data_x = data[b1:b2]
-        self.data_y = df_raw[self.target].values[b1:b2]
-        self.data_stamp = data_stamp
 
     def __getitem__(self, index):
         s_begin = index
         s_end = s_begin + self.seq_len
-        r_begin = s_end - self.label_len
-        r_end = r_begin + self.label_len + self.pred_len
+        r_begin = s_end
+        r_end = r_begin + self.pred_len
 
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_x[r_begin:r_end]
-        seq_x_mark = self.data_stamp[s_begin:s_end]
-        seq_y_mark = self.data_stamp[r_begin:r_end]
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y
 
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
 
     def inverse_transform(self, data):
-        return self.scaler.inverse_transform(data)
+        return self.scaler.inverse_transform(data.reshape(-1, 1)).reshape(-1)
 
 
 # ============================================================================
-# 2. Dataset for Imputation Tasks
+# 2. Dataset for Imputation Tasks (ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather)
 # ============================================================================
 class Dataset_Imputation(Dataset):
     def __init__(self, root_path, data_path, flag='train', seq_len=96,
@@ -111,12 +92,27 @@ class Dataset_Imputation(Dataset):
         self.scaler = StandardScaler()
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
         
-        num_train = int(len(df_raw) * 0.7)
-        num_test = int(len(df_raw) * 0.2)
-        num_val = len(df_raw) - num_train - num_test
-        
-        border1s = [0, num_train - self.seq_len, len(df_raw) - num_test - self.seq_len]
-        border2s = [num_train, num_train + num_val, len(df_raw)]
+        # Handle ETT datasets (60/20/20 split)
+        if 'ETTh' in self.data_path or 'ETTm' in self.data_path:
+            if 'ETTh' in self.data_path:
+                train_end = 8640
+                val_end = 11520
+                test_end = 14400
+            else:  # ETTm
+                train_end = 34560
+                val_end = 46080
+                test_end = 57600
+            
+            border1s = [0, train_end - self.seq_len, val_end - self.seq_len]
+            border2s = [train_end, val_end, test_end]
+        else:
+            # ECL, Weather (70/10/20 split)
+            total_len = len(df_raw)
+            train_end = int(total_len * 0.70)
+            val_end = int(total_len * 0.80)
+            
+            border1s = [0, train_end - self.seq_len, val_end - self.seq_len]
+            border2s = [train_end, val_end, total_len]
         
         type_map = {'train': 0, 'val': 1, 'test': 2}
         set_type = type_map[self.flag]
@@ -159,7 +155,7 @@ class Dataset_Imputation(Dataset):
 
 
 # ============================================================================
-# 3. Dataset for UEA Classification Tasks
+# 3. Dataset for UEA Classification Tasks (10 datasets)
 # ============================================================================
 class Dataset_UEA(Dataset):
     def __init__(self, dataset_name, flag='train', data_path='./datasets/UEA/'):
@@ -185,7 +181,7 @@ class Dataset_UEA(Dataset):
                 
                 series_data = []
                 channels_str = ':'.join(parts[1:])
-                channels = channels_str.split('\\t')
+                channels = channels_str.split('\t')
                 
                 for channel_str in channels:
                     if channel_str.strip():
@@ -232,6 +228,7 @@ class Dataset_UEA(Dataset):
         self.data = np.stack(padded_data)
         self.labels = np.array(labels_list)
         
+        # Normalize per channel
         for channel_idx in range(self.data.shape[2]):
             channel_data = self.data[:, :, channel_idx]
             mean, std = channel_data.mean(), channel_data.std()
@@ -248,7 +245,7 @@ class Dataset_UEA(Dataset):
 
 
 # ============================================================================
-# 4. Dataset for Cross-Domain Evaluation
+# 4. Dataset for Cross-Domain Evaluation (7 datasets)
 # ============================================================================
 class Dataset_CrossDomain(Dataset):
     def __init__(self, root_path, flag='train', size=None,
