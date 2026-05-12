@@ -4,7 +4,7 @@ from layers.mstn_modules import MultiScaleCNN, TransformerPathway
 from layers.eta_module import ETA_Module
 from layers.sgf_module import SGF_Module
 from layers.se_block import SE_Block
-from layers.mha_recalibration import MHA_Recalibration
+from layers.single_dense_layer import SingleDenseLayer  # Changed
 
 class MSTN_Transformer(nn.Module):
 
@@ -32,7 +32,7 @@ class MSTN_Transformer(nn.Module):
         fused_dim = 64 + 128  # cnn_hidden + d_model = 192
         self.sgf = SGF_Module(fused_dim)  # Self-Gated Fusion
         self.se_block = SE_Block(fused_dim, reduction=8) 
-        self.mha_recal = MHA_Recalibration(fused_dim, num_heads=4)
+        self.single_dense = SingleDenseLayer(fused_dim, dropout=configs.dropout)  # Changed
         self.dropout = nn.Dropout(configs.dropout)
         
         # --- 4. Task-Specific Heads ---
@@ -62,11 +62,11 @@ class MSTN_Transformer(nn.Module):
         z_seq = self.eta_seq(h_seq)  # [B, 128]
         
         # --- 3. Fusion & Refinement ---
-        z_concat = torch.cat([z_cnn, z_seq], dim=1) 
+        z_concat = torch.cat([z_cnn, z_seq], dim=1)  # [B, 192]
         z_fused = self.sgf(z_concat)  # Self-Gated Fusion
         z_se = self.se_block(z_fused.unsqueeze(1)) 
-        z_mha = self.mha_recal(z_se)  # Multi-Head Attention recalibration
-        z_final = self.dropout(z_mha.squeeze(1))  
+        z_dense = self.single_dense(z_se)  # Changed (was z_mha)
+        z_final = self.dropout(z_dense.squeeze(1))  
         
         # --- 4. Task-Specific Output ---
         out = self.head(z_final)
