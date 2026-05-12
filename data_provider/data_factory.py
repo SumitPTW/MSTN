@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
-from .data_loader import Dataset_Custom, Dataset_Imputation, Dataset_UEA, Dataset_CrossDomain  
+from .data_loader import Dataset_Imputation, Dataset_UEA, Dataset_CrossDomain, Dataset_PEMS
 
 def data_provider(args, flag):
    
@@ -8,21 +8,19 @@ def data_provider(args, flag):
     drop_last = (flag == 'train')
     batch_size = args.batch_size
     
-      if args.task_name == 'forecasting':
-        # Forecasting datasets (ETT, Electricity, Weather, etc.)
-        if args.dataset_name in ['ETTh1', 'ETTh2', 'ETTm1', 'ETTm2', 
-                                'ECL', 'Weather', 'Traffic', 'Exchange', 'ILI']:
-            data_set = Dataset_Custom(
+    if args.task_name == 'forecasting':
+        # PEMS Traffic Forecasting (only datasets in paper)
+        if args.dataset_name in ['PEMS03', 'PEMS04', 'PEMS07', 'PEMS08']:
+            data_set = Dataset_PEMS(
                 root_path=args.root_path,
                 data_path=args.data_path,
                 flag=flag,
                 size=[args.seq_len, args.label_len, args.pred_len],
-                target=args.target,
-                timeenc=args.embed == 'timeF',
-                freq=args.freq
+                features='M',
+                scale=True
             )
         else:
-            raise ValueError(f"Forecasting dataset {args.dataset_name} not supported.")
+            raise ValueError(f"Forecasting dataset {args.dataset_name} not supported. Use PEMS03/04/07/08.")
     
     elif args.task_name == 'imputation':
         # Imputation datasets
@@ -57,7 +55,7 @@ def data_provider(args, flag):
             'PAMAP2', 'UCI-HAR', 'Rodegast', 'Boubezoul',
             'ActBeCalf', 'MetroPT3', 'NASA'
         ]:
-            # Cross-domain datasets - NOW USING Dataset_CrossDomain
+            # Cross-domain datasets
             data_set = Dataset_CrossDomain(  
                 root_path=args.root_path,  
                 data_path=args.data_path,  
