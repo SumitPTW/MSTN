@@ -7,10 +7,10 @@ convolutional encoder that captures fine-grained local structure; (ii) a sequenc
 mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and a single dense layer to dynamically reweight and fuse multi-scale representations. 
 
 # Model Architecture
-<img width="750" height="700" alt="MSTN FINAL" src="https://github.com/user-attachments/assets/d605f7e2-8c21-409e-9cbc-20d5d4ef22e4" />
+<img width="3522" height="2136" alt="MSTN" src="https://github.com/user-attachments/assets/2ca0313e-600e-41e6-b03c-d251a144ae47" />
 
 # MSTN multi-scale signal processing pipeline
-<img width="750" height="700" alt="image" src="https://github.com/user-attachments/assets/82936e1d-4959-47dc-bd9e-5864e7a17ad2" />
+<img width="3522" height="2136" alt="image" src="https://github.com/user-attachments/assets/82936e1d-4959-47dc-bd9e-5864e7a17ad2" />
 
 # Core Innovation: Dual-Path Design and Early Temporal Aggregation (ETA)
 
