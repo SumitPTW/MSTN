@@ -15,7 +15,8 @@ from data_provider.data_factory import data_provider
 def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pred_len=None):
     model.train()
     total_loss = 0
-    for batch_idx, batch_data in enumerate(train_loader):
+    
+    for batch_data in train_loader:
         optimizer.zero_grad()
         
         if task_name == 'classification':
@@ -26,20 +27,30 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pr
         
         elif task_name == 'imputation':
             x_masked, x_original, mask = batch_data
-            x_masked, x_original, mask = x_masked.to(device).float(), x_original.to(device).float(), mask.to(device).float()
+            x_masked = x_masked.to(device).float()
+            x_original = x_original.to(device).float()
+            mask = mask.to(device).float()
             output = model(x_masked)
             loss = criterion(output * mask, x_original * mask)
 
         elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
-            x, y, x_mark, y_mark = batch_data
-            x, y = x.to(device).float(), y.to(device).float()
-            x_mark, y_mark = x_mark.to(device).float(), y_mark.to(device).float()
-
-            output = model(x, x_mark, y, y_mark)
+            # Handle both 2-item and 4-item batches
+            if len(batch_data) == 2:
+                x, y = batch_data
+                x = x.to(device).float()
+                y = y.to(device).float()
+                output = model(x)
+            else:
+                x, y, x_mark, y_mark = batch_data
+                x = x.to(device).float()
+                y = y.to(device).float()
+                x_mark = x_mark.to(device).float()
+                y_mark = y_mark.to(device).float()
+                output = model(x, x_mark, y, y_mark)
             
-            # SLICING FIX: Compare only to the prediction horizon
-            if pred_len:
-                y = y[:, -pred_len:, :].to(device)
+            # Slice to prediction horizon if needed
+            if pred_len and y.shape[1] > pred_len:
+                y = y[:, -pred_len:, :]
             
             loss = criterion(output, y)
         
@@ -48,6 +59,7 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pr
         total_loss += loss.item()
         
     return total_loss / len(train_loader)
+
 
 def evaluate(model, data_loader, task_name, device, pred_len=None):
     model.eval()
@@ -68,32 +80,43 @@ def evaluate(model, data_loader, task_name, device, pred_len=None):
                 predictions.append(output.cpu().numpy())
                 targets.append(x_original.numpy())
             
-            elif task_name in ['long_term_forecast', 'short_term_forecast', 'cross_dataset_generalization']:
-                x, y, x_mark, y_mark = batch_data
-                output = model(x.to(device).float(), x_mark.to(device).float(), y.to(device).float(), y_mark.to(device).float())
+            elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
+                # Handle both 2-item and 4-item batches
+                if len(batch_data) == 2:
+                    x, y = batch_data
+                    output = model(x.to(device).float())
+                    y = y.numpy()
+                else:
+                    x, y, x_mark, y_mark = batch_data
+                    output = model(x.to(device).float(), 
+                                   x_mark.to(device).float(), 
+                                   y.to(device).float(), 
+                                   y_mark.to(device).float())
+                    y = y.numpy()
                 
-                # SLICING FIX: Must match train_epoch logic
-                if pred_len:
+                # Slice to prediction horizon
+                if pred_len and y.shape[1] > pred_len:
                     y = y[:, -pred_len:, :]
                 
                 predictions.append(output.cpu().numpy())
-                targets.append(y.cpu().numpy())
+                targets.append(y)
     
     if task_name == 'classification':
         return {'accuracy': accuracy_score(targets, predictions)}
     else:
-        # Proper concatenation for 3D forecasting/imputation arrays
         predictions = np.concatenate(predictions, axis=0)
         targets = np.concatenate(targets, axis=0)
         mse = mean_squared_error(targets.flatten(), predictions.flatten())
         mae = mean_absolute_error(targets.flatten(), predictions.flatten())
         return {'MSE': mse, 'MAE': mae}
 
+
 def main():
     parser = argparse.ArgumentParser(description='MSTN: Multi-Scale Temporal Network')
     
     # Arguments
-    parser.add_argument('--task_name', type=str, required=True, choices=['classification', 'imputation', 'long_term_forecast', 'cross_dataset_generalization'])
+    parser.add_argument('--task_name', type=str, required=True, 
+                       choices=['classification', 'imputation', 'long_term_forecast', 'cross_dataset_generalization'])
     parser.add_argument('--model', type=str, required=True, choices=['MSTN_Transformer', 'MSTN_BiLSTM'])
     parser.add_argument('--dataset_name', type=str, required=True)
     parser.add_argument('--root_path', type=str, default='./datasets/')
@@ -126,25 +149,39 @@ def main():
     save_path = os.path.join(args.save_dir, experiment_name)
     os.makedirs(save_path, exist_ok=True)
     
-    if args.task_name in ['long_term_forecast', 'short_term_forecast'] and not args.data_path:
-        args.data_path = f'{args.dataset_name}.csv'
+    # Set default data_path if not provided
+    if args.task_name in ['long_term_forecast', 'cross_dataset_generalization'] and not args.data_path:
+        if args.dataset_name in ['PEMS03', 'PEMS04', 'PEMS07', 'PEMS08']:
+            args.data_path = f'{args.dataset_name}.npz'
+        else:
+            args.data_path = f'{args.dataset_name}.csv'
     
     # Data
     train_dataset, train_loader = data_provider(args, flag='train')
     val_dataset, val_loader = data_provider(args, flag='val')
     test_dataset, test_loader = data_provider(args, flag='test')
     
+    # Set enc_in dynamically from dataset if not provided
+    if hasattr(train_dataset, 'data_x'):
+        if len(train_dataset.data_x.shape) == 2:
+            args.enc_in = 1
+        else:
+            args.enc_in = train_dataset.data_x.shape[-1]
+    
     # Model
     model_dict = {'MSTN_Transformer': MSTN_Transformer, 'MSTN_BiLSTM': MSTN_BiLSTM}
     model = model_dict[args.model](args).to(device)
     
     # Print Params
+    print(f'Model: {args.model}')
+    print(f'Task: {args.task_name}')
+    print(f'Dataset: {args.dataset_name}')
     print(f'Total parameters: {sum(p.numel() for p in model.parameters()):,}')
     
-    # Optims
+    # Optimizer & Scheduler
     criterion = nn.CrossEntropyLoss() if args.task_name == 'classification' else nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.train_epochs)
+    optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=1e-4)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.5)
     
     best_val_metric = 0 if args.task_name == 'classification' else float('inf')
     history = {'train_loss': [], 'val_metric': []}
@@ -155,21 +192,28 @@ def main():
         train_loss = train_epoch(model, train_loader, optimizer, criterion, args.task_name, device, args.pred_len)
         val_results = evaluate(model, val_loader, args.task_name, device, args.pred_len)
         
-        val_metric = val_results['accuracy'] if args.task_name == 'classification' else val_results['MSE']
-        metric_name = 'Accuracy' if args.task_name == 'classification' else 'MSE'
+        if args.task_name == 'classification':
+            val_metric = val_results['accuracy']
+            metric_name = 'Accuracy'
+            better = val_metric > best_val_metric
+        else:
+            val_metric = val_results['MSE']
+            metric_name = 'MSE'
+            better = val_metric < best_val_metric
         
         history['train_loss'].append(train_loss)
         history['val_metric'].append(val_metric)
         
         # Save Best
-        if (args.task_name == 'classification' and val_metric > best_val_metric) or \
-           (args.task_name != 'classification' and val_metric < best_val_metric):
+        if better:
             best_val_metric = val_metric
             torch.save(model.state_dict(), os.path.join(save_path, 'best_model.pth'))
             print(f'  ✓ New best {metric_name}: {val_metric:.4f}')
         
-        scheduler.step()
-        print(f'Epoch {epoch+1:03d} | Train Loss: {train_loss:.4f} | Val {metric_name}: {val_metric:.4f}')
+        scheduler.step(val_metric)
+        
+        epoch_time = time.time() - start_time
+        print(f'Epoch {epoch+1:03d}/{args.train_epochs} | Train Loss: {train_loss:.4f} | Val {metric_name}: {val_metric:.4f} | Time: {epoch_time:.1f}s')
     
     # Test
     model.load_state_dict(torch.load(os.path.join(save_path, 'best_model.pth')))
@@ -179,7 +223,13 @@ def main():
     pd.DataFrame(history).to_csv(os.path.join(save_path, 'training_history.csv'), index=False)
     pd.DataFrame([test_results]).to_csv(os.path.join(save_path, 'test_results.csv'), index=False)
     pd.DataFrame([vars(args)]).to_csv(os.path.join(save_path, 'config.csv'), index=False)
-    print(f'Test Results: {test_results}')
+    
+    print(f'\n{"="*50}')
+    print(f'Test Results:')
+    for k, v in test_results.items():
+        print(f'  {k}: {v:.6f}')
+    print(f'{"="*50}')
+    print(f'Results saved to: {save_path}')
 
 if __name__ == "__main__":
     main()
