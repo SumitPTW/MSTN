@@ -1,5 +1,10 @@
 # MSTN: Fast and Efficient Multivariate Time Series Prediction Model
-Multi-scale Temporal Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggregation principle. MSTN integrates three complementary components: (i) a multi-scale convolutional encoder that captures fine-grained local structure; (ii) a sequence modeling module that learns long-range dependencies through either recurrent or attention-based mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and multi-head attention to dynamically modulate cross-scale representations. This design enables MSTN to flexibly model temporal patterns spanning milliseconds to extended horizons, while avoiding the computational burden typically associated with long-context models. Across extensive benchmarks covering forecasting, imputation, classification, and cross-dataset generalization.
+Real-world time series often exhibit strong non-stationarity, complex nonlinear dynamics, and behavior expressed across multiple temporal scales, from rapid local fluctuations to
+slow-evolving long-range trends. However, many contemporary architectures impose rigid, fixed-scale structural priors—such as patch-based tokenization, predefined receptive fields,
+or frozen backbone encoders—which can over-regularize temporal dynamics and limit adaptability to abrupt high-magnitude events. To handle this, we introduce the Multi-scale Tem-
+poral Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggregation principle. MSTN integrates three complementary components: (i) a multi-scale
+convolutional encoder that captures fine-grained local structure; (ii) a sequence modeling module that learns long-range dependencies through either recurrent or attention-based
+mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and a single dense layer to dynamically reweight and fuse multi-scale representations. 
 
 # Model Architecture
 <img width="750" height="700" alt="MSTN FINAL" src="https://github.com/user-attachments/assets/d605f7e2-8c21-409e-9cbc-20d5d4ef22e4" />
@@ -68,21 +73,21 @@ Expected Output:
 # Configuration
 - Setting	Value
 - Model	MSTN-Transformer or MSTN-BiLSTM
-- Lookback window	96 (36 for ILI)
-- Prediction horizons	96, 192, 336, 720 (24, 36, 48, 60 for ILI)
+- Lookback window	96 
+- Prediction horizons	12, 24, 48, 96
 - Imputation mask ratios	12.5%, 25%, 37.5%, 50%
 - Evaluation metrics	MSE, MAE (forecasting/imputation), Accuracy (classification)
 
 # Reproducing Experiments - All experiment datasets are public (Links / References given in paper)
 
-# Forecasting (9 datasets)
-  ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather, Traffic, Exchange, ILI
+# Imputation (6 datasets)
+  ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather
+  
+# Forecasting (4 PEMS datasets)
+  PEMS03, PEMS04, PEMS07, PEMS08
 
 # Classification (10 datasets)
   EthanolConcentration, FaceDetection, Handwriting, Heartbeat, JapaneseVowels, PEMS-SF, SelfRegulationSCP1, SelfRegulationSCP2, SpokenArabicDigits, UWaveGestureLibrary
-
-# Imputation (6 datasets)
-  ETTh1, ETTh2, ETTm1, ETTm2, ECL, Weather
   
 # Cross-Dataset Generalizability (7 datasets)
   UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA
