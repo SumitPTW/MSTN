@@ -221,7 +221,7 @@ class Dataset_UEA(Dataset):
 
 
 # ============================================================================
-# 4. Dataset for Cross-Domain Evaluation
+# 4. Dataset for Cross-Domain Evaluation (80/10/10 Split)
 # ============================================================================
 class Dataset_CrossDomain(Dataset):
     def __init__(self, root_path, flag='train', size=None,
@@ -244,12 +244,14 @@ class Dataset_CrossDomain(Dataset):
     def __read_data__(self):
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
         
-        num_train = int(len(df_raw) * 0.7)
-        num_test = int(len(df_raw) * 0.2)
-        num_vali = len(df_raw) - num_train - num_test
+        total_len = len(df_raw)
         
-        border1s = [0, num_train - self.seq_len, len(df_raw) - num_test - self.seq_len]
-        border2s = [num_train, num_train + num_vali, len(df_raw)]
+        num_train = int(total_len * 0.8)   # 80%
+        num_vali = int(total_len * 0.1)    # 10%
+        num_test = total_len - num_train - num_vali  # 10%
+        
+        border1s = [0, num_train - self.seq_len, total_len - num_test - self.seq_len]
+        border2s = [num_train, num_train + num_vali, total_len]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
 
