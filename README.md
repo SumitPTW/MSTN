@@ -46,37 +46,6 @@ MSTN/
 └── README.md                 # This file
 ```
 
-
-# Install dependencies
-- pip install torch numpy pandas scikit-learn
-- pip install torch torchvision torchaudio
-- pip install aeon
-- pip install datasetsforecast aeon scikit-learn numpy pandas
-- pip install scikit-learn numpy
-
-# Installation - Clone repository
-- git clone https://github.com/SumitPTW/MSTN.git
-- cd MSTN
-
-
-# Quick Verification- Run this simple test to verify MSTN works:
-
-Run python test_mstn.py
-
-Expected Output:
-## M→M Verification Results
-
-All models successfully preserve feature dimensionality:
-
-| Model | ETTh (7) | ECL (321) | Weather (21) |
-|-------|----------|-----------|--------------|
-| MSTN-Transformer | ✅ 7→7 | ✅ 321→321 | ✅ 21→21 |
-| MSTN-BiLSTM | ✅ 7→7 | ✅ 321→321 | ✅ 21→21 |
-
-**Parameter counts (for 7-feature datasets):**
-- MSTN-Transformer: **1.06M**
-- MSTN-BiLSTM: **0.40M**
-
   
 # Configuration
 - Setting	Value
@@ -99,5 +68,203 @@ All models successfully preserve feature dimensionality:
   
 # Cross-Dataset Generalizability (7 datasets)
   UCI-HAR, PAMAP2, Rodegast, Boubezoul, ActBeCalf, MetroPT3, NASA
+
+# Install dependencies
+- pip install torch numpy pandas scikit-learn
+- pip install torch torchvision torchaudio
+- pip install aeon
+- pip install datasetsforecast aeon scikit-learn numpy pandas
+- pip install scikit-learn numpy
+
+# Installation - Clone repository
+!git clone https://github.com/SumitPTW/MSTN.git
+
+# Navigate 
+import os
+os.chdir('/content/MSTN')
+print("Current directory:", os.getcwd())
+
+# Install dependencies
+!pip install torch torchaudio torchvision numpy pandas scikit-learn aeon datasetsforecast matplotlib
+
+# Quick Verification- Run this simple test to verify MSTN works:
+!python test_mstn.py
+
+Expected Output:
+============================================================
+MSTN M→M (Multivariate to Multivariate) TEST
+============================================================
+
+Verifying input features = output features for all datasets
+
+
+############################################################
+# MSTN_Transformer - IMPUTATION TASKS
+############################################################
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on ETTh1
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on ETTh2
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on ETTm1
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on ETTm2
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on ECL
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 321]) (321 features)
+   Output: torch.Size([4, 96, 321]) (321 features)
+   ✅ M→M: 321 → 321 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on Weather
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 21]) (21 features)
+   Output: torch.Size([4, 96, 21]) (21 features)
+   ✅ M→M: 21 → 21 features
+
+############################################################
+# MSTN_BiLSTM - IMPUTATION TASKS
+############################################################
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on ETTh1
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on ETTh2
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on ETTm1
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on ETTm2
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 7]) (7 features)
+   Output: torch.Size([4, 96, 7]) (7 features)
+   ✅ M→M: 7 → 7 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on ECL
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 321]) (321 features)
+   Output: torch.Size([4, 96, 321]) (321 features)
+   ✅ M→M: 321 → 321 features
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on Weather
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 21]) (21 features)
+   Output: torch.Size([4, 96, 21]) (21 features)
+   ✅ M→M: 21 → 21 features
+
+############################################################
+# MSTN_Transformer - FORECASTING TASKS (PEMS)
+############################################################
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on PEMS03 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 358]) (358 sensors)
+   Output: torch.Size([4, 96, 358]) (358 sensors)
+   ✅ M→M: 358 sensors → 358 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on PEMS04 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 307]) (307 sensors)
+   Output: torch.Size([4, 96, 307]) (307 sensors)
+   ✅ M→M: 307 sensors → 307 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on PEMS07 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 883]) (883 sensors)
+   Output: torch.Size([4, 96, 883]) (883 sensors)
+   ✅ M→M: 883 sensors → 883 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_Transformer on PEMS08 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 170]) (170 sensors)
+   Output: torch.Size([4, 96, 170]) (170 sensors)
+   ✅ M→M: 170 sensors → 170 sensors
+
+############################################################
+# MSTN_BiLSTM - FORECASTING TASKS (PEMS)
+############################################################
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on PEMS03 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 358]) (358 sensors)
+   Output: torch.Size([4, 96, 358]) (358 sensors)
+   ✅ M→M: 358 sensors → 358 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on PEMS04 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 307]) (307 sensors)
+   Output: torch.Size([4, 96, 307]) (307 sensors)
+   ✅ M→M: 307 sensors → 307 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on PEMS07 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 883]) (883 sensors)
+   Output: torch.Size([4, 96, 883]) (883 sensors)
+   ✅ M→M: 883 sensors → 883 sensors
+
+──────────────────────────────────────────────────
+Testing: MSTN_BiLSTM on PEMS08 (Forecasting M→M)
+──────────────────────────────────────────────────
+   Input:  torch.Size([4, 96, 170]) (170 sensors)
+   Output: torch.Size([4, 96, 170]) (170 sensors)
+   ✅ M→M: 170 sensors → 170 sensors
+
+============================================================
+PARAMETER SUMMARY
+============================================================
+
+For 7-feature datasets (ETTh1, ETTh2, ETTm1, ETTm2):
+   MSTN-Transformer: 1,055,416 (~1.06M)
+   MSTN-BiLSTM:      398,008 (~0.40M)
+
+============================================================
+✅ ALL M→M TESTS COMPLETED
+============================================================
+
 
 
