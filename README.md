@@ -1,10 +1,7 @@
 # MSTN: Fast and Efficient Multivariate Time Series Prediction Model
 Real-world time series often exhibit strong non-stationarity, complex nonlinear dynamics, and behavior expressed across multiple temporal scales, from rapid local fluctuations to
 slow-evolving long-range trends. However, many contemporary architectures impose rigid, fixed-scale structural priors—such as patch-based tokenization, predefined receptive fields,
-or frozen backbone encoders—which can over-regularize temporal dynamics and limit adaptability to abrupt high-magnitude events. To handle this, we introduce the Multi-scale Tem-
-poral Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggregation principle. MSTN integrates three complementary components: (i) a multi-scale
-convolutional encoder that captures fine-grained local structure; (ii) a sequence modeling module that learns long-range dependencies through either recurrent or attention-based
-mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and a single dense layer to dynamically reweight and fuse multi-scale representations. 
+or frozen backbone encoders—which can over-regularize temporal dynamics and limit adaptability to abrupt high-magnitude events. To handle this, we introduce the Multi-scale Temporal Network (MSTN), a hybrid neural architecture grounded in an Early Temporal Aggregation principle. MSTN integrates three complementary components: (i) a multi-scale convolutional encoder that captures fine-grained local structure; (ii) a sequence modeling module that learns long-range dependencies through either recurrent or attention-based mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitation and a single dense layer to dynamically reweight and fuse multi-scale representations. 
 
 # Model Architecture
 <img width="3522" height="2136" alt="MSTN" src="https://github.com/user-attachments/assets/2ca0313e-600e-41e6-b03c-d251a144ae47" />
@@ -16,9 +13,9 @@ mechanisms; and (iii) a self-gated fusion stage incorporating squeeze–excitati
 
 Dual-path Encoding: CNN (local) + Transformer/BiLSTM (global): parallel encoding strategy in which a global sequence-modeling pathway (Transformer or BiLSTM; CD strategy) captures long-range temporal dependencies, while a lightweight convolutional pathway (CI strategy; O(L)) extracts fine-grained local temporal patterns.
 
-Efficiency through ETA: collapsing O(L2) to O(1). MSTN applies the ETA mechanism immediately after the high-capacity encoders, collapsing the temporal dimension (L → 1) via learned sequence aggregation. By performing the computationally intensive operations (e.g., O(L2) Transformer self-attention) before this aggregation step, the subsequent refinement layers—including feature fusion, SE recalibration, MHA, and prediction modules—operate with a fixed O(1) cost with respect to L. 
+Efficiency through ETA: collapsing O(L²) to O(1). MSTN applies the ETA mechanism immediately after the high-capacity encoders, collapsing the temporal dimension (L → 1) via learned sequence aggregation. By performing the computationally intensive operations (e.g., O(L²) Transformer self-attention) before this aggregation step, the subsequent refinement layers—including feature fusion, SE recalibration, SDL, and prediction modules—operate with a fixed O(1) cost with respect to L. 
 
-Parameter Efficiency: ~1.04M (Transformer) and ~0.40M (BiLSTM) parameters
+Parameter Efficiency: ~1.06M (Transformer) and ~0.40M (BiLSTM) parameters
 
 ## Project Structure
 
@@ -96,7 +93,6 @@ MSTN M→M (Multivariate to Multivariate) TEST
 ============================================================
 
 Verifying input features = output features for all datasets
-
 
 ############################################################
 # MSTN_Transformer - IMPUTATION TASKS
