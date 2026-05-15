@@ -74,18 +74,16 @@ MSTN/
 - pip install scikit-learn numpy
 
 # Installation - Clone repository
-!git clone https://github.com/SumitPTW/MSTN.git
+git clone https://github.com/SumitPTW/MSTN.git
 
 # Navigate 
-import os
-os.chdir('/content/MSTN')
-print("Current directory:", os.getcwd())
+cd MSTN
 
 # Install dependencies
-!pip install torch torchaudio torchvision numpy pandas scikit-learn aeon datasetsforecast matplotlib
+pip install torch torchaudio torchvision numpy pandas scikit-learn aeon datasetsforecast matplotlib
 
 # Quick Verification- Run this simple test to verify MSTN works:
-!python test_mstn.py
+python test_mstn.py
 
 Expected Output:
 ============================================================
