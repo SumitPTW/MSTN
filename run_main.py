@@ -12,6 +12,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_er
 from models import MSTN_Transformer, MSTN_BiLSTM
 from data_provider.data_factory import data_provider
 
+
 def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pred_len=None):
     model.train()
     total_loss = 0
@@ -31,10 +32,10 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pr
             x_original = x_original.to(device).float()
             mask = mask.to(device).float()
             output = model(x_masked)
-            loss = criterion(output * mask, x_original * mask)
+            missing_mask = 1.0 - mask
+            loss = criterion(output * missing_mask, x_original * missing_mask)
 
         elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
-            # Handle both 2-item and 4-item batches
             if len(batch_data) == 2:
                 x, y = batch_data
                 x = x.to(device).float()
@@ -48,7 +49,6 @@ def train_epoch(model, train_loader, optimizer, criterion, task_name, device, pr
                 y_mark = y_mark.to(device).float()
                 output = model(x, x_mark, y, y_mark)
             
-            # Slice to prediction horizon if needed
             if pred_len and y.shape[1] > pred_len:
                 y = y[:, -pred_len:, :]
             
@@ -81,7 +81,6 @@ def evaluate(model, data_loader, task_name, device, pred_len=None):
                 targets.append(x_original.numpy())
             
             elif task_name in ['long_term_forecast', 'cross_dataset_generalization']:
-                # Handle both 2-item and 4-item batches
                 if len(batch_data) == 2:
                     x, y = batch_data
                     output = model(x.to(device).float())
@@ -94,7 +93,6 @@ def evaluate(model, data_loader, task_name, device, pred_len=None):
                                    y_mark.to(device).float())
                     y = y.numpy()
                 
-                # Slice to prediction horizon
                 if pred_len and y.shape[1] > pred_len:
                     y = y[:, -pred_len:, :]
                 
@@ -114,7 +112,6 @@ def evaluate(model, data_loader, task_name, device, pred_len=None):
 def main():
     parser = argparse.ArgumentParser(description='MSTN: Multi-Scale Temporal Network')
     
-    # Arguments
     parser.add_argument('--task_name', type=str, required=True, 
                        choices=['classification', 'imputation', 'long_term_forecast', 'cross_dataset_generalization'])
     parser.add_argument('--model', type=str, required=True, choices=['MSTN_Transformer', 'MSTN_BiLSTM'])
@@ -122,10 +119,11 @@ def main():
     parser.add_argument('--root_path', type=str, default='./datasets/')
     parser.add_argument('--data_path', type=str, default='')
     parser.add_argument('--seq_len', type=int, default=96)
+    parser.add_argument('--label_len', type=int, default=48)
     parser.add_argument('--pred_len', type=int, default=96)
     parser.add_argument('--mask_ratio', type=float, default=0.25)
-    parser.add_argument('--enc_in', type=int, default=7)
-    parser.add_argument('--c_out', type=int, default=7)
+    parser.add_argument('--enc_in', type=int, default=None)
+    parser.add_argument('--c_out', type=int, default=None)
     parser.add_argument('--num_class', type=int, default=10)
     parser.add_argument('--d_model', type=int, default=128)
     parser.add_argument('--n_heads', type=int, default=8)
@@ -135,7 +133,7 @@ def main():
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--train_epochs', type=int, default=100)
     parser.add_argument('--learning_rate', type=float, default=0.001)
-    parser.add_argument('--num_workers', type=int, default=0)
+    parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--use_gpu', type=bool, default=True)
     parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--save_dir', type=str, default='./results/')
@@ -143,42 +141,39 @@ def main():
     args = parser.parse_args()
     device = torch.device(f'cuda:{args.gpu}' if args.use_gpu and torch.cuda.is_available() else 'cpu')
     
-    # Path Setup
     os.makedirs(args.save_dir, exist_ok=True)
     experiment_name = f"{args.model}_{args.task_name}_{args.dataset_name}_{time.strftime('%Y%m%d_%H%M%S')}"
     save_path = os.path.join(args.save_dir, experiment_name)
     os.makedirs(save_path, exist_ok=True)
     
-    # Set default data_path if not provided
     if args.task_name in ['long_term_forecast', 'cross_dataset_generalization'] and not args.data_path:
         if args.dataset_name in ['PEMS03', 'PEMS04', 'PEMS07', 'PEMS08']:
             args.data_path = f'{args.dataset_name}.npz'
         else:
             args.data_path = f'{args.dataset_name}.csv'
     
-    # Data
     train_dataset, train_loader = data_provider(args, flag='train')
     val_dataset, val_loader = data_provider(args, flag='val')
     test_dataset, test_loader = data_provider(args, flag='test')
     
-    # Set enc_in dynamically from dataset if not provided
-    if hasattr(train_dataset, 'data_x'):
-        if len(train_dataset.data_x.shape) == 2:
-            args.enc_in = 1
+    if args.enc_in is None and hasattr(train_dataset, 'data_x'):
+        if len(train_dataset.data_x.shape) == 3:
+            args.enc_in = train_dataset.data_x.shape[-1]
         else:
             args.enc_in = train_dataset.data_x.shape[-1]
     
-    # Model
+    if args.c_out is None:
+        args.c_out = args.enc_in
+    
     model_dict = {'MSTN_Transformer': MSTN_Transformer, 'MSTN_BiLSTM': MSTN_BiLSTM}
     model = model_dict[args.model](args).to(device)
     
-    # Print Params
     print(f'Model: {args.model}')
     print(f'Task: {args.task_name}')
     print(f'Dataset: {args.dataset_name}')
+    print(f'Enc_in: {args.enc_in}, C_out: {args.c_out}')
     print(f'Total parameters: {sum(p.numel() for p in model.parameters()):,}')
     
-    # Optimizer & Scheduler
     criterion = nn.CrossEntropyLoss() if args.task_name == 'classification' else nn.MSELoss()
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5, factor=0.5)
@@ -204,22 +199,19 @@ def main():
         history['train_loss'].append(train_loss)
         history['val_metric'].append(val_metric)
         
-        # Save Best
         if better:
             best_val_metric = val_metric
             torch.save(model.state_dict(), os.path.join(save_path, 'best_model.pth'))
-            print(f'  ✓ New best {metric_name}: {val_metric:.4f}')
+            print(f'  New best {metric_name}: {val_metric:.4f}')
         
         scheduler.step(val_metric)
         
         epoch_time = time.time() - start_time
         print(f'Epoch {epoch+1:03d}/{args.train_epochs} | Train Loss: {train_loss:.4f} | Val {metric_name}: {val_metric:.4f} | Time: {epoch_time:.1f}s')
     
-    # Test
     model.load_state_dict(torch.load(os.path.join(save_path, 'best_model.pth')))
     test_results = evaluate(model, test_loader, args.task_name, device, args.pred_len)
     
-    # Save Files
     pd.DataFrame(history).to_csv(os.path.join(save_path, 'training_history.csv'), index=False)
     pd.DataFrame([test_results]).to_csv(os.path.join(save_path, 'test_results.csv'), index=False)
     pd.DataFrame([vars(args)]).to_csv(os.path.join(save_path, 'config.csv'), index=False)
@@ -230,6 +222,7 @@ def main():
         print(f'  {k}: {v:.6f}')
     print(f'{"="*50}')
     print(f'Results saved to: {save_path}')
+
 
 if __name__ == "__main__":
     main()
